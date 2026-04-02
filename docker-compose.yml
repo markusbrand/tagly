@@ -46,9 +46,12 @@ services:
       DJANGO_DEBUG: "1"
       ALLOWED_HOSTS: "*"
       HOST_IP: "${HOST_IP:-192.168.0.150}"
-      DJANGO_SECRET_KEY: dev-only-secret-key
+      # Loaded from project `.env` when present (`docker compose` substitutes variables).
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-secret-key}"
       CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008"
       CSRF_TRUSTED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008"
+      # Set to 1 in project `.env` on hosts behind Cloudflare Tunnel (HTTPS at edge, HTTP to container).
+      DJANGO_BEHIND_HTTPS_PROXY: "${DJANGO_BEHIND_HTTPS_PROXY:-0}"
     volumes:
       - ./backend:/app
     command: python manage.py runserver 0.0.0.0:8008
@@ -68,6 +71,7 @@ services:
       DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
       DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-secret-key}"
     volumes:
       - ./backend:/app
     command: celery -A tagly worker -l info --concurrency=2
@@ -87,6 +91,7 @@ services:
       DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
       DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-secret-key}"
     volumes:
       - ./backend:/app
     command: celery -A tagly beat -l info

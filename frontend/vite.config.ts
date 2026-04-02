@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // Public hostnames (e.g. Cloudflare Tunnel) must be listed — Vite blocks other Host headers by default.
 const extraAllowedHosts = (process.env.VITE_ALLOWED_HOSTS ?? '')
   .split(',')
-  .map((h) => h.trim())
+  .map((h) => h.trim().replace(/^https?:\/\//i, '').split('/')[0])
   .filter(Boolean)
 
 // https://vite.dev/config/

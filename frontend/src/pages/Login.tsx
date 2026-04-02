@@ -42,13 +42,25 @@ export default function Login() {
     try {
       await login({ username, password });
     } catch (err) {
-      const axiosErr = err as AxiosError;
-      if (axiosErr.response?.status === 401 || axiosErr.response?.status === 403) {
+      const axiosErr = err as AxiosError<{ detail?: unknown }>;
+      const status = axiosErr.response?.status;
+      const data = axiosErr.response?.data;
+      const detailStr =
+        typeof data?.detail === 'string'
+          ? data.detail
+          : Array.isArray(data?.detail)
+            ? data.detail.map(String).join(' ')
+            : null;
+      if (status === 401) {
+        setError(t('auth.login_error'));
+      } else if (detailStr) {
+        setError(detailStr.length > 300 ? `${detailStr.slice(0, 300)}…` : detailStr);
+      } else if (status === 403) {
         setError(t('auth.login_error'));
       } else {
         setError(t('common.error'));
       }
-      console.error('[Auth] Login failed', axiosErr.message);
+      console.error('[Auth] Login failed', status, axiosErr.response?.data ?? axiosErr.message);
     } finally {
       setIsSubmitting(false);
     }

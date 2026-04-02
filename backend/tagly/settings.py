@@ -7,6 +7,18 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _split_env_list(key: str, default: str) -> list[str]:
+    return [x.strip() for x in os.environ.get(key, default).split(",") if x.strip()]
+
+
+def _env_bool(key: str, default: bool = False) -> bool:
+    val = os.environ.get(key)
+    if val is None:
+        return default
+    return val.lower() in ("true", "1", "yes")
+
+
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-change-me-in-production",
@@ -17,7 +29,7 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 SERVER_URL = os.environ.get("SERVER_URL", "https://tagly.brandstaetter.rocks")
 PORT = int(os.environ.get("PORT", "8008"))
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.0.150").split(",")
+ALLOWED_HOSTS = _split_env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.0.150")
 
 HOST_IP = os.environ.get("HOST_IP", "192.168.0.150")
 
@@ -141,23 +153,33 @@ REST_FRAMEWORK = {
 
 # CORS
 
-CORS_ALLOWED_ORIGINS = os.environ.get(
+CORS_ALLOWED_ORIGINS = _split_env_list(
     "CORS_ALLOWED_ORIGINS",
     f"http://localhost:5173,http://127.0.0.1:5173,http://{HOST_IP}:5173,http://{HOST_IP}:8008",
-).split(",")
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF / Session
 
-CSRF_TRUSTED_ORIGINS = os.environ.get(
+CSRF_TRUSTED_ORIGINS = _split_env_list(
     "CSRF_TRUSTED_ORIGINS",
     f"http://localhost:5173,http://127.0.0.1:5173,http://{HOST_IP}:5173,http://{HOST_IP}:8008",
-).split(",")
+)
 
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
+
+# Cloudflare Tunnel / reverse proxy: TLS ends at edge; Django often sees http://127.0.0.1:8008.
+# Without this, request.is_secure() is False, cookies may be wrong, CSRF/origin checks can fail.
+_BEHIND_HTTPS_PROXY = _env_bool("DJANGO_BEHIND_HTTPS_PROXY", False)
+if _BEHIND_HTTPS_PROXY:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
+SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", _BEHIND_HTTPS_PROXY)
+CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE", _BEHIND_HTTPS_PROXY)
 
 # Redis
 
