@@ -5,8 +5,9 @@ services:
       POSTGRES_DB: tagly
       POSTGRES_USER: tagly
       POSTGRES_PASSWORD: tagly_dev
+    # Host port (right side stays 5432 inside the network). Override if 5432 is taken, e.g. system PostgreSQL on Raspberry Pi.
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
