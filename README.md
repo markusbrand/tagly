@@ -45,10 +45,10 @@ cd tagly
 # Copy environment file
 cp .env.example .env
 
-# If `docker compose up` fails with "Bind for 0.0.0.0:5432 failed: port is already allocated"
-# (common on Raspberry Pi when system PostgreSQL uses 5432), set in `.env`:
-#   POSTGRES_HOST_PORT=5433
-# Containers still use port 5432 on the `db` service; only the host mapping changes.
+# If `docker compose up` fails with "port is already allocated" on the host:
+# - Postgres (5432): set POSTGRES_HOST_PORT=5433 in `.env` (common when system PostgreSQL is installed).
+# - Redis (6379): set REDIS_HOST_PORT=6380 in `.env` (common when system Redis is installed).
+# Inside Compose, services still use db:5432 and redis:6379; only the published host ports change.
 
 # Start all services
 docker compose up -d
@@ -120,6 +120,7 @@ All configuration is via environment variables. See `.env.example` for the full 
 | `DB_HOST` | `localhost` | PostgreSQL host |
 | `DB_PORT` | `5432` | PostgreSQL port |
 | `POSTGRES_HOST_PORT` | `5432` | Docker Compose only: host port published for the `db` service (e.g. `5433` if 5432 is already in use) |
+| `REDIS_HOST_PORT` | `6379` | Docker Compose only: host port published for the `redis` service (e.g. `6380` if 6379 is already in use) |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL |
 | `DJANGO_SECRET_KEY` | - | Django secret key (generate for production) |
 | `EMAIL_HOST` | `localhost` | SMTP server host |
