@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
+    "drf_spectacular",
     "corsheaders",
     # Local apps
     "users",
@@ -147,8 +148,35 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "users.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Tagly API",
+    "DESCRIPTION": "REST API for asset tracking, lending, QR stickers, custom fields, and administration.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
+    "SERVE_AUTHENTICATION": ["rest_framework.authentication.SessionAuthentication"],
+    "TAGS": [
+        {"name": "users", "description": "Authentication, profile, preferences"},
+        {"name": "assets", "description": "Asset CRUD, GUID lookup, export"},
+        {"name": "customers", "description": "Customers and country list"},
+        {"name": "borrowing", "description": "Borrow, return, history"},
+        {"name": "custom-fields", "description": "Field definitions and values"},
+        {"name": "qr", "description": "Sticker templates and PDF generation"},
+        {"name": "notifications", "description": "Notification log (admin)"},
+        {"name": "audit", "description": "Audit log (admin)"},
+        {"name": "health", "description": "Health check"},
+    ],
+    "ENUM_NAME_OVERRIDES": {
+        "AssetStatusEnum": "assets.models.Asset.Status",
+        "BorrowRecordStatusEnum": "borrowing.models.BorrowRecord.Status",
+        "NotificationLogStatusEnum": "notifications.models.NotificationLog.Status",
+    },
 }
 
 # CORS

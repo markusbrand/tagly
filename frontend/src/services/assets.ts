@@ -34,8 +34,11 @@ export const assetService = {
 
   getByGuid: (guid: string) => api.get<AssetDetail>(`/assets/guid/${guid}/`),
 
-  create: (data: { name: string; custom_fields?: Record<string, unknown> }) =>
-    api.post<Asset>('/assets/', data),
+  create: (data: {
+    name?: string;
+    guid?: string;
+    custom_fields?: Record<string, unknown>;
+  }) => api.post<Asset>('/assets/', data),
 
   update: (id: number, data: Partial<Asset>) =>
     api.patch<Asset>(`/assets/${id}/`, data),

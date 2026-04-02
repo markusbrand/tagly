@@ -92,3 +92,38 @@
 | E2E | Playwright |
 | Security scanning | pip audit, npm audit, ruff (security rules) |
 | CI integration | GitHub Actions (see ci.yml) |
+
+---
+
+## 6. Executable scenarios — Scanner, onboarding & Stammdaten (Vader / text-to-test)
+
+Use these as **manual exploratory** or **automated** cases (Playwright + API). Preconditions: authenticated user; admin has configured at least one **ASSET** custom field unless noted.
+
+### 6.1 Asset create / onboarding (API + UI)
+
+| ID | Preconditions | Steps | Expected |
+|----|---------------|-------|----------|
+| OB-01 | At least one ASSET field definition exists | `POST /api/v1/assets/` with `name` only, no `custom_fields` | **400**; `custom_fields` errors list every missing field id |
+| OB-02 | Mandatory STRING field | Submit onboarding UI with that field empty | **400** (API) / inline errors (UI); asset not created |
+| OB-03 | Optional + mandatory fields | Send `custom_fields` with all ids; mandatory filled, optional empty/`null` where allowed | **201**; values persisted |
+| OB-04 | Unknown field id in payload | `custom_fields: { "999999": "x" }` | **400**; unknown id error |
+| OB-05 | No field definitions in system | `POST` with `{}` or no `custom_fields` | **201** (inventory still creatable) |
+| OB-06 | No field definitions | `POST` with non-empty `custom_fields` | **400**; rejects stray keys |
+| OB-07 | Select / multi-select | Invalid choice not in admin `choices` | **400** |
+| OB-08 | Onboarding from scanner | Scan unknown QR → fill all Stammdaten → save | Asset **GUID** matches sticker; list/detail shows custom values |
+
+### 6.2 QR scanner & cameras (device / browser)
+
+| ID | Preconditions | Steps | Expected |
+|----|---------------|-------|----------|
+| SC-01 | Android with ≥2 cameras | Open scanner; note default preview | Prefer rear/world-facing label if enumerated; readable preview |
+| SC-02 | Same | Tap **Next camera** | Preview switches; preference stored for session |
+| SC-03 | Same | Enable **Cycle cameras automatically** | Preview rotates through devices every few seconds until disabled |
+| SC-04 | Desktop webcam only | Open scanner | Single-camera hint or disabled switch; fallback `environment` if list empty |
+| SC-05 | Permission denied | Deny camera | Clear error; no crash |
+| SC-06 | Double-scan race | Flash two valid QRs quickly | At most one navigation; no duplicate creates |
+
+### 6.3 Regression ties
+
+- **OB-01–OB-07** map to `validate_asset_custom_fields_for_asset_create` (backend) and `validateAssetCustomFieldValuesForCreate` + `buildCustomFieldsPayload` (`frontend/src/utils/assetCustomFieldPayload.ts`).
+- **SC-01–SC-04** map to `QRScannerService.listCameras`, sort order, `Scanner` page controls.

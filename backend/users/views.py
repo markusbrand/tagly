@@ -1,7 +1,8 @@
 import logging
 
 from django.contrib.auth import authenticate, get_user_model, login, logout
-from rest_framework import generics, status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,7 +20,17 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
+LoginErrorResponse = inline_serializer(
+    name="LoginErrorResponse",
+    fields={"detail": serializers.CharField()},
+)
 
+
+@extend_schema(
+    tags=["users"],
+    request=LoginSerializer,
+    responses={200: UserSerializer, 401: LoginErrorResponse},
+)
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -50,6 +61,7 @@ class LoginView(APIView):
         return Response(UserSerializer(user).data)
 
 
+@extend_schema(tags=["users"], request=None, responses={status.HTTP_204_NO_CONTENT: None})
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -114,6 +126,16 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         )
 
 
+CsrfResponse = inline_serializer(
+    name="CsrfResponse",
+    fields={
+        "detail": serializers.CharField(),
+        "csrfToken": serializers.CharField(),
+    },
+)
+
+
+@extend_schema(tags=["users"], responses={200: CsrfResponse})
 class CsrfTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -127,6 +149,13 @@ class CsrfTokenView(APIView):
         return Response({"detail": "CSRF cookie set.", "csrfToken": token})
 
 
+HealthResponse = inline_serializer(
+    name="HealthResponse",
+    fields={"status": serializers.CharField()},
+)
+
+
+@extend_schema(tags=["health"], responses={200: HealthResponse})
 class HealthCheckView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []

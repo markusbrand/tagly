@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from rest_framework.views import APIView
 from users.permissions import IsAuthenticated
 
 from .models import Customer
-from .serializers import CustomerListSerializer, CustomerSerializer
+from .serializers import CountryRowSerializer, CustomerListSerializer, CustomerSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,10 @@ COUNTRIES = [
 ]
 
 
+@extend_schema(
+    tags=["customers"],
+    responses={200: CountryRowSerializer(many=True)},
+)
 class CountryListView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []

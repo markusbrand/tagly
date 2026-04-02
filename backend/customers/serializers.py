@@ -59,3 +59,10 @@ class CustomerListSerializer(serializers.ModelSerializer):
             "city", "country", "email", "phone",
         ]
         read_only_fields = fields
+
+
+class CountryRowSerializer(serializers.Serializer):
+    """ISO country option for forms (static list)."""
+
+    code = serializers.CharField()
+    name = serializers.CharField()

@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,16 +18,28 @@ import {
   Visibility as DetailIcon,
   CloudOff as OfflineIcon,
 } from '@mui/icons-material';
-import { assetService } from '../services/assets';
-import { addPendingAction } from '../services/offlineStore';
 import type { AxiosError } from 'axios';
+import { AssetCustomFieldInputs } from '../components/AssetCustomFieldInputs';
+import { buildCustomFieldsPayload } from '../utils/assetCustomFieldPayload';
+import { assetService } from '../services/assets';
+import { customFieldsService, type CustomFieldDefinition } from '../services/customFields';
+import { addPendingAction } from '../services/offlineStore';
+import {
+  initialValueForField,
+  validateAssetCustomFieldValuesForCreate,
+} from '../utils/assetCustomFieldValidation';
 
 export default function AssetOnboarding() {
   const { guid } = useParams<{ guid: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
+  const [definitions, setDefinitions] = useState<CustomFieldDefinition[]>([]);
+  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [loadError, setLoadError] = useState('');
+  const [loadingFields, setLoadingFields] = useState(true);
+
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdAssetId, setCreatedAssetId] = useState<number | null>(null);
@@ -36,32 +48,95 @@ export default function AssetOnboarding() {
 
   const decodedGuid = guid ? decodeURIComponent(guid) : '';
 
+  const setFieldValue = useCallback((fieldId: string, value: unknown) => {
+    setValues((prev) => ({ ...prev, [fieldId]: value }));
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next[fieldId];
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoadingFields(true);
+      setLoadError('');
+      try {
+        const res = await customFieldsService.listDefinitions('ASSET');
+        const sorted = [...res.data.results].sort((a, b) => a.display_order - b.display_order);
+        if (cancelled) return;
+        setDefinitions(sorted);
+        const initial: Record<string, unknown> = {};
+        for (const d of sorted) {
+          initial[String(d.id)] = initialValueForField(d.field_type);
+        }
+        setValues(initial);
+      } catch (err) {
+        console.error('[Onboarding] Failed to load custom fields', err);
+        if (!cancelled) setLoadError(t('common.error'));
+      } finally {
+        if (!cancelled) setLoadingFields(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!decodedGuid || !name.trim()) return;
+    if (!decodedGuid) return;
 
     setError('');
+    setFieldErrors({});
+
+    const localErrors = validateAssetCustomFieldValuesForCreate(definitions, values);
+    if (Object.keys(localErrors).length > 0) {
+      setFieldErrors(localErrors);
+      return;
+    }
+
+    const customFields = buildCustomFieldsPayload(definitions, values);
+
     setIsSubmitting(true);
 
     try {
-      const response = await assetService.create({ name: name.trim() });
+      const response = await assetService.create({
+        guid: decodedGuid,
+        custom_fields: customFields,
+      });
       setCreatedAssetId(response.data.id);
       setSnackOpen(true);
     } catch (err) {
-      const axiosErr = err as AxiosError;
+      const axiosErr = err as AxiosError<{
+        detail?: string;
+        custom_fields?: Record<string, string | string[]>;
+      }>;
 
       if (!axiosErr.response && !navigator.onLine) {
         await addPendingAction({
           method: 'POST',
           url: '/assets/',
-          data: { name: name.trim(), guid: decodedGuid },
+          data: { guid: decodedGuid, custom_fields: customFields },
         });
         setSavedOffline(true);
         setSnackOpen(true);
       } else {
-        setError(
-          (axiosErr.response?.data as { detail?: string })?.detail ?? t('common.error'),
-        );
+        const data = axiosErr.response?.data;
+        if (data?.custom_fields && typeof data.custom_fields === 'object') {
+          const flat: Record<string, string> = {};
+          for (const [k, v] of Object.entries(data.custom_fields)) {
+            flat[k] = Array.isArray(v) ? v.join(' ') : String(v);
+          }
+          setFieldErrors(flat);
+        }
+        const detail =
+          typeof data?.detail === 'string'
+            ? data.detail
+            : t('common.error');
+        setError(detail);
         console.error('[Onboarding] Create failed', axiosErr.message);
       }
     } finally {
@@ -70,6 +145,11 @@ export default function AssetOnboarding() {
   };
 
   const isSuccess = createdAssetId !== null || savedOffline;
+  const canSubmit =
+    !loadingFields &&
+    !loadError &&
+    decodedGuid.length > 0 &&
+    !isSuccess;
 
   return (
     <Box
@@ -93,9 +173,18 @@ export default function AssetOnboarding() {
 
       <Card elevation={2} sx={{ width: '100%', maxWidth: 480, borderRadius: 3 }}>
         <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-          <Typography variant="h5" sx={{ mb: 3, fontWeight: 700 }}>
+          <Typography variant="h5" sx={{ mb: 1, fontWeight: 700 }}>
             {t('onboarding.title')}
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {t('onboarding.stammdaten_hint')}
+          </Typography>
+
+          {loadError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {loadError}
+            </Alert>
+          )}
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -109,64 +198,72 @@ export default function AssetOnboarding() {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            <TextField
-              label={t('onboarding.guid_label')}
-              value={decodedGuid}
-              fullWidth
-              slotProps={{ input: { readOnly: true } }}
-            />
-
-            <TextField
-              label={t('onboarding.name_label')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              fullWidth
-              autoFocus
-              disabled={isSubmitting || isSuccess}
-            />
-
-            {!isSuccess && (
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
+          {loadingFields ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              <TextField
+                label={t('onboarding.guid_label')}
+                value={decodedGuid}
                 fullWidth
-                disabled={isSubmitting || !name.trim()}
-                sx={{ mt: 1 }}
-              >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  t('onboarding.save')
-                )}
-              </Button>
-            )}
+                slotProps={{ input: { readOnly: true } }}
+              />
 
-            {isSuccess && (
-              <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+              {definitions.length === 0 ? (
+                <Alert severity="info">{t('onboarding.no_custom_fields')}</Alert>
+              ) : (
+                <AssetCustomFieldInputs
+                  definitions={definitions}
+                  values={values}
+                  onChange={setFieldValue}
+                  errors={fieldErrors}
+                  disabled={isSubmitting || isSuccess}
+                />
+              )}
+
+              {!isSuccess && (
                 <Button
+                  type="submit"
                   variant="contained"
-                  startIcon={<ScannerIcon />}
-                  onClick={() => navigate('/scanner')}
-                  sx={{ flex: 1 }}
+                  size="large"
+                  fullWidth
+                  disabled={isSubmitting || !canSubmit}
+                  sx={{ mt: 1 }}
                 >
-                  {t('scanner.scan_qr')}
+                  {isSubmitting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    t('onboarding.save')
+                  )}
                 </Button>
-                {createdAssetId && (
+              )}
+
+              {isSuccess && (
+                <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
                   <Button
-                    variant="outlined"
-                    startIcon={<DetailIcon />}
-                    onClick={() => navigate(`/assets/${createdAssetId}`)}
+                    variant="contained"
+                    startIcon={<ScannerIcon />}
+                    onClick={() => navigate('/scanner')}
                     sx={{ flex: 1 }}
                   >
-                    {t('common.edit')}
+                    {t('scanner.scan_qr')}
                   </Button>
-                )}
-              </Box>
-            )}
-          </Box>
+                  {createdAssetId && (
+                    <Button
+                      variant="outlined"
+                      startIcon={<DetailIcon />}
+                      onClick={() => navigate(`/assets/${createdAssetId}`)}
+                      sx={{ flex: 1 }}
+                    >
+                      {t('common.edit')}
+                    </Button>
+                  )}
+                </Box>
+              )}
+            </Box>
+          )}
         </CardContent>
       </Card>
 

@@ -1,6 +1,7 @@
 import pytest
 
 from assets.models import Asset
+from custom_fields.models import CustomFieldDefinition
 
 
 @pytest.mark.django_db
@@ -57,3 +58,61 @@ class TestAssetAPI:
         assert asset.is_deleted is True
         assert asset.delete_reason == 'lost'
         assert asset.status == Asset.Status.DELETED
+
+    def test_create_asset_strict_custom_fields_missing_key(self, authenticated_client, user):
+        field = CustomFieldDefinition.objects.create(
+            entity_type=CustomFieldDefinition.EntityType.ASSET,
+            name='Serial',
+            field_type=CustomFieldDefinition.FieldType.STRING,
+            is_mandatory=False,
+            options={},
+            validation_rules={},
+            display_order=0,
+        )
+        response = authenticated_client.post('/api/v1/assets/', {'name': 'Strict Test'})
+        assert response.status_code == 400
+        assert str(field.pk) in response.data['custom_fields']
+
+    def test_create_asset_strict_unknown_field_id(self, authenticated_client, user):
+        CustomFieldDefinition.objects.create(
+            entity_type=CustomFieldDefinition.EntityType.ASSET,
+            name='Serial',
+            field_type=CustomFieldDefinition.FieldType.STRING,
+            is_mandatory=False,
+            options={},
+            validation_rules={},
+            display_order=0,
+        )
+        response = authenticated_client.post(
+            '/api/v1/assets/',
+            {'name': 'X', 'custom_fields': {'999999': 'nope'}},
+            format='json',
+        )
+        assert response.status_code == 400
+        assert '999999' in response.data['custom_fields']
+
+    def test_create_asset_strict_ok_with_all_keys(self, authenticated_client, user):
+        field = CustomFieldDefinition.objects.create(
+            entity_type=CustomFieldDefinition.EntityType.ASSET,
+            name='Serial',
+            field_type=CustomFieldDefinition.FieldType.STRING,
+            is_mandatory=False,
+            options={},
+            validation_rules={},
+            display_order=0,
+        )
+        response = authenticated_client.post(
+            '/api/v1/assets/',
+            {'name': 'OK Test', 'custom_fields': {str(field.pk): ''}},
+            format='json',
+        )
+        assert response.status_code == 201
+
+    def test_create_asset_rejects_custom_fields_when_none_configured(self, authenticated_client, user):
+        response = authenticated_client.post(
+            '/api/v1/assets/',
+            {'name': 'Y', 'custom_fields': {'1': 'orphan'}},
+            format='json',
+        )
+        assert response.status_code == 400
+        assert '1' in response.data['custom_fields']

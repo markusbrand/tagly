@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from rest_framework import serializers
 
-from .models import CustomFieldDefinition, CustomFieldValue
+from .models import CustomFieldDefinition
 
 
 class CustomFieldDefinitionSerializer(serializers.ModelSerializer):

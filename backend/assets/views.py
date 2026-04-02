@@ -2,7 +2,9 @@ import logging
 
 from django.http import HttpResponse
 from django.utils import timezone
-from rest_framework import filters, generics, status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import filters, generics, serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,6 +19,15 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
+
+AssetDeleteRequest = inline_serializer(
+    name="AssetDeleteRequest",
+    fields={"delete_reason": serializers.CharField()},
+)
+AssetDeleteResponse = inline_serializer(
+    name="AssetDeleteResponse",
+    fields={"detail": serializers.CharField()},
+)
 
 
 class AssetListCreateView(generics.ListCreateAPIView):
@@ -73,6 +84,11 @@ class AssetByGuidView(generics.RetrieveAPIView):
     )
 
 
+@extend_schema(
+    tags=["assets"],
+    request=AssetDeleteRequest,
+    responses={200: AssetDeleteResponse, 404: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+)
 class AssetDeleteView(APIView):
     permission_classes = [IsAdmin]
 
@@ -101,6 +117,13 @@ class AssetDeleteView(APIView):
         return Response({"detail": "Asset deleted."}, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    tags=["assets"],
+    responses={
+        200: OpenApiTypes.BINARY,
+    },
+    description="Download filtered assets as an Excel (.xlsx) file. Same query parameters as the asset list.",
+)
 class AssetExportView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -1,6 +1,8 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -80,6 +82,19 @@ class CustomFieldDefinitionDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
+@extend_schema_view(
+    get=extend_schema(
+        tags=["custom-fields"],
+        responses={200: OpenApiTypes.OBJECT, 404: OpenApiTypes.OBJECT},
+        description="Map of custom field definition id (string) to JSON value.",
+    ),
+    put=extend_schema(
+        tags=["custom-fields"],
+        request=CustomFieldBulkValueSerializer,
+        responses={200: OpenApiTypes.OBJECT, 404: OpenApiTypes.OBJECT},
+        description="Replace/update custom field values for the entity.",
+    ),
+)
 class CustomFieldValuesView(APIView):
     permission_classes = [IsAuthenticated]
 

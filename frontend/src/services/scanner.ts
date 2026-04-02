@@ -1,27 +1,110 @@
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, type Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 
-export interface ScannerConfig {
+const SCAN_CONFIG: Html5QrcodeCameraScanConfig = {
+  fps: 10,
+  qrbox: { width: 250, height: 250 },
+  disableFlip: true,
+};
+
+export interface CameraDevice {
+  id: string;
+  label: string;
+}
+
+export interface StartScannerOptions {
   elementId: string;
-  onSuccess: (guid: string) => void;
+  /** If set, opens this device; otherwise uses `facingMode: 'environment'`. */
+  cameraId?: string | null;
+  onSuccess: (decodedText: string) => void;
   onError?: (error: string) => void;
+}
+
+/** Higher score = prefer for QR scanning (rear / world-facing). */
+export function cameraPreferenceScore(label: string): number {
+  const l = label.toLowerCase();
+  if (
+    /back|rear|wide|ultra|tele|environment|world facing|facing back|outer|rück/i.test(l)
+  ) {
+    return 100;
+  }
+  if (/front|selfie|user|facetime|facing front|inner|frontkamera/i.test(l)) {
+    return 10;
+  }
+  return 50;
+}
+
+export function sortCamerasForQrScan(cameras: CameraDevice[]): CameraDevice[] {
+  return [...cameras].sort((a, b) => {
+    const diff = cameraPreferenceScore(b.label) - cameraPreferenceScore(a.label);
+    if (diff !== 0) return diff;
+    return a.label.localeCompare(b.label);
+  });
+}
+
+const STORAGE_KEY = 'tagly_preferred_camera_id';
+
+export function getStoredPreferredCameraId(): string | null {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function storePreferredCameraId(id: string): void {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, id);
+  } catch {
+    /* private mode */
+  }
+}
+
+export function resolveInitialCameraIndex(sortedCameras: CameraDevice[]): number {
+  if (sortedCameras.length === 0) return 0;
+  const saved = getStoredPreferredCameraId();
+  if (!saved) return 0;
+  const idx = sortedCameras.findIndex((c) => c.id === saved);
+  return idx >= 0 ? idx : 0;
 }
 
 export class QRScannerService {
   private scanner: Html5Qrcode | null = null;
 
-  async start(config: ScannerConfig): Promise<void> {
-    this.scanner = new Html5Qrcode(config.elementId);
+  static async listCameras(): Promise<CameraDevice[]> {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      return devices.map((d) => ({
+        id: d.id,
+        label: (d.label && d.label.trim()) || d.id,
+      }));
+    } catch (e) {
+      console.warn('[Scanner] Enumerating cameras failed', e);
+      return [];
+    }
+  }
+
+  async start(options: StartScannerOptions): Promise<void> {
+    await this.stop();
+    this.scanner = new Html5Qrcode(options.elementId);
+    const cameraConfig = options.cameraId
+      ? { deviceId: { exact: options.cameraId } }
+      : { facingMode: 'environment' as const };
+
     await this.scanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => config.onSuccess(decodedText),
+      cameraConfig,
+      SCAN_CONFIG,
+      (decodedText) => options.onSuccess(decodedText),
       () => {},
     );
   }
 
   async stop(): Promise<void> {
     if (this.scanner?.isScanning) {
-      await this.scanner.stop();
+      try {
+        await this.scanner.stop();
+      } catch (e) {
+        console.warn('[Scanner] stop()', e);
+      }
     }
     this.scanner = null;
   }

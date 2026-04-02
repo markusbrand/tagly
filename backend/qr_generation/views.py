@@ -1,8 +1,9 @@
 import logging
 
 from django.http import HttpResponse
-from rest_framework import generics, status
-from rest_framework.response import Response
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework import generics
 from rest_framework.views import APIView
 
 from users.permissions import IsAdmin, IsAuthenticated
@@ -60,6 +61,12 @@ class StickerTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
 
 
+@extend_schema(
+    tags=["qr"],
+    request=GenerateStickersSerializer,
+    responses={200: OpenApiTypes.BINARY},
+    description="Generate a PDF of QR sticker sheets. Response body is application/pdf.",
+)
 class GenerateStickersView(APIView):
     permission_classes = [IsAuthenticated]
 

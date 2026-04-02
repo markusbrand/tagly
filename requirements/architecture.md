@@ -1,5 +1,7 @@
 # Tagly — Architecture Decision Record
 
+Mermaid diagrams, container topology, and an expanded API map live in **[docs/technical.md](../docs/technical.md)**. This file keeps decision rationale and the ASCII overview.
+
 ## High-Level Architecture
 
 ```

@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext value={value}>{children}</AuthContext>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- useAuth exported next to AuthProvider (context pattern)
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {

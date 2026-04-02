@@ -38,7 +38,13 @@
     "mode_returning": "Return Asset",
     "camera_error": "Could not access camera",
     "invalid_qr": "Invalid QR code",
-    "scanning_hint": "Point your camera at a Tagly QR sticker"
+    "scanning_hint": "Point your camera at a Tagly QR sticker",
+    "current_camera": "Active camera",
+    "camera_default": "Default (environment)",
+    "next_camera": "Next camera",
+    "auto_cycle_cameras": "Cycle cameras automatically",
+    "auto_cycle_hint": "Cycles through all detected cameras until you scan a code or turn this off.",
+    "single_camera_hint": "Only one camera was detected, so switching is unavailable. Without a device list the default environment camera is used."
   },
   "assets": {
     "name": "Name",
@@ -97,8 +103,10 @@
   },
   "onboarding": {
     "title": "Register New Asset",
-    "guid_label": "Asset ID (GUID)",
-    "name_label": "Asset Name",
+    "guid_label": "QR code / asset ID",
+    "name_label": "Asset name",
+    "stammdaten_hint": "Required fields and validation match the asset fields configured under Admin → Custom Fields.",
+    "no_custom_fields": "No asset master-data fields are defined yet. An administrator can add them under Administration → Custom Fields. You can still register the asset using the QR ID.",
     "save": "Register Asset",
     "success": "Asset registered successfully",
     "saved_offline": "Saved offline - will sync when connected"

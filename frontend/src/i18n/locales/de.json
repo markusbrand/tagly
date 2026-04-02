@@ -38,7 +38,13 @@
     "mode_returning": "Objekt zurückgeben",
     "camera_error": "Kamerazugriff nicht möglich",
     "invalid_qr": "Ungültiger QR-Code",
-    "scanning_hint": "Richten Sie Ihre Kamera auf einen Tagly QR-Sticker"
+    "scanning_hint": "Richten Sie Ihre Kamera auf einen Tagly QR-Sticker",
+    "current_camera": "Aktive Kamera",
+    "camera_default": "Standard (Umgebung)",
+    "next_camera": "Nächste Kamera",
+    "auto_cycle_cameras": "Kameras automatisch wechseln",
+    "auto_cycle_hint": "Wechselt zyklisch durch alle erkannten Kameras, bis Sie einen Code scannen oder die Option ausschalten.",
+    "single_camera_hint": "Es wurde nur eine Kamera erkannt; Wechsel ist nicht möglich. Ohne Liste wird die Standard-Kamera (Umgebung) genutzt."
   },
   "assets": {
     "name": "Name",
@@ -97,8 +103,10 @@
   },
   "onboarding": {
     "title": "Neues Objekt erfassen",
-    "guid_label": "Objekt-ID (GUID)",
+    "guid_label": "QR-Code / Objekt-ID",
     "name_label": "Objektname",
+    "stammdaten_hint": "Pflichtfelder und Validierung entsprechen den im Admin unter „Benutzerdefinierte Felder“ definierten Asset-Feldern.",
+    "no_custom_fields": "Es sind noch keine Asset-Stammdatenfelder angelegt. Ein Administrator kann sie unter Verwaltung → Benutzerdefinierte Felder definieren. Sie können das Objekt trotzdem mit der QR-ID anlegen.",
     "save": "Objekt erfassen",
     "success": "Objekt erfolgreich erfasst",
     "saved_offline": "Offline gespeichert – wird bei Verbindung synchronisiert"

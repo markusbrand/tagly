@@ -1,8 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from borrowing.models import BorrowRecord
 from custom_fields.models import CustomFieldDefinition, CustomFieldValue
+from custom_fields.validators import validate_asset_custom_fields_for_asset_create
 
 from .models import Asset
 
@@ -17,6 +19,7 @@ class BorrowRecordSummarySerializer(serializers.ModelSerializer):
             "borrowed_until", "returned_at", "status",
         ]
 
+    @extend_schema_field(serializers.CharField())
     def get_customer_name(self, obj):
         return str(obj.customer)
 
@@ -60,6 +63,7 @@ class AssetDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    @extend_schema_field(CustomFieldValueSerializer(many=True))
     def get_custom_field_values(self, obj):
         ct = ContentType.objects.get_for_model(obj)
         values = CustomFieldValue.objects.filter(
@@ -71,15 +75,46 @@ class AssetDetailSerializer(serializers.ModelSerializer):
 
 class AssetCreateSerializer(serializers.ModelSerializer):
     custom_fields = serializers.DictField(child=serializers.JSONField(), required=False, write_only=True)
+    guid = serializers.UUIDField(required=False)
 
     class Meta:
         model = Asset
         fields = ["id", "guid", "name", "custom_fields"]
-        read_only_fields = ["id", "guid"]
+        read_only_fields = ["id"]
+
+    def validate_guid(self, value):
+        if value is None:
+            return value
+        if Asset.objects.filter(guid=value).exists():
+            raise serializers.ValidationError("An asset with this GUID already exists.")
+        return value
+
+    def validate(self, attrs):
+        name = (attrs.get("name") or "").strip()
+        guid = attrs.get("guid")
+        if not name:
+            if guid:
+                attrs["name"] = f"QR-{str(guid)[:8]}"
+            else:
+                raise serializers.ValidationError(
+                    {"name": "Either a display name or a GUID (e.g. from QR scan) is required."},
+                )
+        else:
+            attrs["name"] = name
+
+        cf = attrs.get("custom_fields")
+        errs = validate_asset_custom_fields_for_asset_create(cf if cf is not None else {})
+        if errs:
+            raise serializers.ValidationError({"custom_fields": errs})
+        return attrs
 
     def create(self, validated_data):
-        custom_fields_data = validated_data.pop("custom_fields", {})
-        asset = Asset.objects.create(**validated_data)
+        custom_fields_data = validated_data.pop("custom_fields", None) or {}
+        guid = validated_data.pop("guid", None)
+        create_kwargs = {**validated_data}
+        if guid is not None:
+            create_kwargs["guid"] = guid
+        asset = Asset.objects.create(**create_kwargs)
         self._save_custom_fields(asset, custom_fields_data)
         return asset
 

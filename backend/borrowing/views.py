@@ -2,6 +2,8 @@ import logging
 
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -28,6 +30,11 @@ def _get_client_ip(request):
     return request.META.get("REMOTE_ADDR")
 
 
+@extend_schema(
+    tags=["borrowing"],
+    request=BorrowRecordCreateSerializer,
+    responses={201: BorrowRecordSerializer, 400: OpenApiTypes.OBJECT},
+)
 class BorrowCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -71,6 +78,15 @@ class BorrowCreateView(APIView):
         return Response(output, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    tags=["borrowing"],
+    request=ReturnSerializer,
+    responses={
+        200: BorrowRecordSerializer,
+        404: OpenApiTypes.OBJECT,
+        400: OpenApiTypes.OBJECT,
+    },
+)
 class BorrowReturnView(APIView):
     permission_classes = [IsAuthenticated]
 

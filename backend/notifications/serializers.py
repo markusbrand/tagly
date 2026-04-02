@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import NotificationLog
@@ -12,6 +13,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = [f.name for f in NotificationLog._meta.get_fields() if hasattr(f, 'name')]
 
+    @extend_schema_field(serializers.CharField())
     def get_customer_name(self, obj):
         customer = obj.borrow_record.customer
         return f"{customer.first_name} {customer.last_name}"

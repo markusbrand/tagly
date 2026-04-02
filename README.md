@@ -1,96 +1,116 @@
-# Tagly — Asset Tracking & Lending Management
+# Tagly — Asset tracking & lending
 
-Tagly is a web application for tracking hardware, tools, and assets that can be lent to customers. It uses QR-code stickers for asset identification and provides a mobile-first PWA for scanning and a desktop-first backoffice for management.
+Tagly is a web application for tracking hardware, tools, and other assets that can be lent to customers. QR stickers identify assets; a **mobile-first scanner (PWA)** and a **desktop backoffice** cover day-to-day work.
 
-## Features
+**Documentation**
 
-- **QR Sticker Generation**: Generate printable PDF sheets of QR-code stickers with configurable templates
-- **Mobile QR Scanner (PWA)**: Scan QR codes to onboard assets, lend to customers, or process returns
-- **Backoffice Dashboard**: Desktop-first admin interface with asset overview, search/filter, and borrow history
-- **Custom Fields**: Admin-configurable metadata fields for assets and customers
-- **Offline Support**: Scan and record data offline, sync when connected
-- **Notifications**: Automated email alerts for overdue assets
-- **Excel Export**: Export filtered asset data to .xlsx
-- **Audit Trail**: Complete history of all data changes
-- **Multi-language**: English and German (extensible)
-- **Light/Dark Mode**: User-selectable theme
+- **[docs/README.md](docs/README.md)** — Documentation index  
+- **[docs/user-guide.md](docs/user-guide.md)** — End-user guide (roles, scanner, offline, troubleshooting)  
+- **[docs/technical.md](docs/technical.md)** — Architecture, domain model, APIs, diagrams, CI/CD, security  
+- **[requirements/architecture.md](requirements/architecture.md)** — Architecture decision record (ADR)
 
-## Tech Stack
+---
+
+## Features (overview)
+
+- QR sticker PDF generation with configurable templates  
+- Mobile QR scanner: onboard, borrow, return  
+- Backoffice: assets, search/filter, borrow history, Excel export  
+- Admin-configurable custom fields for assets and customers  
+- Offline scan queue with sync when online  
+- Email notifications for overdue borrows (Celery + SMTP)  
+- Audit trail, multi-language (EN/DE), light/dark theme  
+
+---
+
+## Tech stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React 18, TypeScript, MUI v6, Vite |
+| Frontend | React 19, TypeScript, MUI 7, Vite 8 |
 | Backend | Django 5.1, Django REST Framework |
 | Database | PostgreSQL 16 |
-| Task Queue | Celery + Redis |
-| QR Generation | Segno + ReportLab |
-| Container | Docker, published to GHCR |
-| CI/CD | GitHub Actions |
+| Tasks | Celery + Redis |
+| QR / PDF | Segno, ReportLab |
+| Containers | Docker; backend image published to **GHCR** |
+| CI | GitHub Actions |
 
-## Quick Start (Development)
+---
 
-### Prerequisites
+## Prerequisites
 
-- Docker & Docker Compose
-- Node.js 20+ (for frontend development without Docker)
-- Python 3.12+ (for backend development without Docker)
+- **Docker workflow:** Docker and Docker Compose  
+- **Backend only:** Python 3.12+, PostgreSQL 16, Redis  
+- **Frontend only:** Node.js 20+  
 
-### Using Docker Compose (Recommended)
+---
+
+## Installation — full stack (recommended)
+
+Uses Compose services: `db`, `redis`, `backend`, `celery_worker`, `celery_beat`, `frontend`.
 
 ```bash
-# Clone the repository
 git clone https://github.com/markusbrand/tagly.git
 cd tagly
-
-# Copy environment file
 cp .env.example .env
-
-# If `docker compose up` fails with "port is already allocated" on the host:
-# - Postgres (5432): set POSTGRES_HOST_PORT=5433 in `.env` (common when system PostgreSQL is installed).
-# - Redis (6379): set REDIS_HOST_PORT=6380 in `.env` (common when system Redis is installed).
-# Inside Compose, services still use db:5432 and redis:6379; only the published host ports change.
-
-# Start all services
-docker compose up -d
-
-# Run database migrations
-docker compose exec backend python manage.py migrate
-
-# If migrate failed partway (e.g. before app migrations existed) and errors persist,
-# reset the Postgres volume and migrate again (removes local DB data):
-#   docker compose down -v && docker compose up -d
-#   docker compose exec backend python manage.py migrate
-
-# Create a superuser
-docker compose exec backend python manage.py createsuperuser
-
-# Access the application
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:8008/api/v1/
-# Django Admin: http://localhost:8008/admin/
 ```
 
-### Manual Setup
+If host ports **5432** or **6379** are already in use, set in `.env` for example:
 
-#### Backend
+- `POSTGRES_HOST_PORT=5433`  
+- `REDIS_HOST_PORT=6380`  
+
+(Containers still use `db:5432` and `redis:6379` internally.)
+
+```bash
+docker compose up -d
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+```
+
+**URLs (default)**
+
+| Service | URL |
+|---------|-----|
+| Frontend (Vite dev) | http://localhost:5173 |
+| API | http://localhost:8008/api/v1/ |
+| Django admin | http://localhost:8008/admin/ |
+
+If `migrate` was partially applied and errors persist, reset the DB volume (destroys local data):  
+`docker compose down -v && docker compose up -d`, then migrate again.
+
+---
+
+## Installation — backend (without Docker)
+
+From the repository root:
 
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# Configure environment
-export DB_NAME=tagly DB_USER=tagly DB_PASSWORD=tagly_dev DB_HOST=localhost
+Ensure PostgreSQL and Redis are running. Export configuration (example for local dev):
+
+```bash
+export DB_NAME=tagly DB_USER=tagly DB_PASSWORD=tagly_dev DB_HOST=localhost DB_PORT=5432
 export REDIS_URL=redis://localhost:6379/0
 export DJANGO_DEBUG=True
+```
 
+```bash
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8008
 ```
 
-#### Frontend
+The API is served at `http://localhost:8008/api/v1/` (see `PORT` in `.env.example` if you change the port).
+
+---
+
+## Installation — frontend (without Docker)
 
 ```bash
 cd frontend
@@ -98,186 +118,116 @@ npm install
 npm run dev
 ```
 
-#### Celery Workers
+Point the app at your API by setting **`VITE_API_URL`** (e.g. in `frontend/.env` or your shell) to the full API base, e.g. `http://localhost:8008/api/v1`.
+
+**Production build**
 
 ```bash
-cd backend
+npm run build
+npm run preview   # optional local preview of dist/
+```
+
+Serve the `dist/` output with a static host or CDN; configure CORS and CSRF on Django for that origin (see `.env.example`).
+
+---
+
+## Celery (backend tasks)
+
+Required for scheduled overdue checks and notification dispatch. From `backend/` with the same env as Django:
+
+```bash
 celery -A tagly worker -l info
 celery -A tagly beat -l info
 ```
 
+With Docker Compose, `celery_worker` and `celery_beat` services run these for you.
+
+---
+
 ## Configuration
 
-All configuration is via environment variables. See `.env.example` for the full list.
+All settings are driven by environment variables. See **`.env.example`** for the full list and comments.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8008` | Backend server port |
-| `SERVER_URL` | `https://tagly.brandstaetter.rocks` | Public server URL |
-| `DB_NAME` | `tagly` | PostgreSQL database name |
-| `DB_USER` | `tagly` | PostgreSQL user |
-| `DB_PASSWORD` | - | PostgreSQL password |
-| `DB_HOST` | `localhost` | PostgreSQL host |
-| `DB_PORT` | `5432` | PostgreSQL port |
-| `POSTGRES_HOST_PORT` | `5432` | Docker Compose only: host port published for the `db` service (e.g. `5433` if 5432 is already in use) |
-| `REDIS_HOST_PORT` | `6379` | Docker Compose only: host port published for the `redis` service (e.g. `6380` if 6379 is already in use) |
-| `REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL |
-| `DJANGO_SECRET_KEY` | - | Django secret key (generate for production) |
-| `EMAIL_HOST` | `localhost` | SMTP server host |
-| `EMAIL_PORT` | `587` | SMTP server port |
-| `DEFAULT_FROM_EMAIL` | `noreply@tagly.brandstaetter.rocks` | Sender email address |
+**Common variables**
 
-### Gmail SMTP Setup
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | Backend listen port (default `8008`) |
+| `DB_*`, `REDIS_URL` | Database and Celery broker |
+| `DJANGO_SECRET_KEY` | Required in production |
+| `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` | Host and browser security |
+| `VITE_API_URL` | Frontend → API base URL (must be reachable from the **browser**) |
+| `EMAIL_*` | SMTP for notifications |
 
-Tagly uses Gmail SMTP for sending overdue-asset notifications. To configure it:
+**HTTPS / Cloudflare:** If users open the UI at `https://…`, set `VITE_API_URL` to the **public** API URL (not a private LAN IP). Set `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` to include the UI origin, and recreate the backend container after changes.
 
-1. **Enable 2-Step Verification** on your Google account at [myaccount.google.com/security](https://myaccount.google.com/security)
-2. **Generate an App Password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) — select "Mail" and your device
-3. **Set these variables** in your `.env`:
+**Gmail SMTP:** Enable 2-Step Verification, create an [App Password](https://myaccount.google.com/apppasswords), and set `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL` in `.env`.
 
-```
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your-gmail@gmail.com
-EMAIL_HOST_PASSWORD=abcd efgh ijkl mnop   # the 16-char App Password
-EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=your-gmail@gmail.com
-```
+---
 
-> **Note:** Never use your regular Gmail password. App Passwords are revocable and scoped to a single application.
+## API overview
 
-## API Overview
+Base path: **`/api/v1/`**
 
-Base URL: `/api/v1/`
+| Area | Examples |
+|------|----------|
+| Health | `GET .../health/` |
+| Users | `.../users/login/`, `logout/`, `me/`, `csrf/` |
+| Assets | `.../assets/`, `.../assets/guid/<uuid>/`, `.../assets/export/` |
+| Customers | `.../customers/`, `.../customers/countries/` |
+| Borrowing | `.../borrowing/create/`, `.../borrowing/<id>/return/`, `.../borrowing/asset/<id>/history/` |
+| Custom fields | `.../custom-fields/definitions/`, `.../custom-fields/values/<type>/<id>/` |
+| QR | `.../qr/templates/`, `.../qr/generate/` |
+| Admin logs | `.../notifications/`, `.../audit/` |
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health/` | GET | Health check |
-| `/users/login/` | POST | User login |
-| `/users/logout/` | POST | User logout |
-| `/users/me/` | GET | Current user profile |
-| `/assets/` | GET, POST | List/create assets |
-| `/assets/<id>/` | GET, PATCH | Asset detail |
-| `/assets/guid/<uuid>/` | GET | Lookup asset by GUID |
-| `/assets/export/` | GET | Export assets to Excel |
-| `/customers/` | GET, POST | List/create customers |
-| `/customers/countries/` | GET | Country list |
-| `/borrowing/create/` | POST | Create borrow record |
-| `/borrowing/<id>/return/` | POST | Return an asset |
-| `/borrowing/asset/<id>/history/` | GET | Asset borrow history |
-| `/custom-fields/definitions/` | GET, POST | Custom field definitions |
-| `/custom-fields/values/<type>/<id>/` | GET, PUT | Custom field values |
-| `/qr/templates/` | GET, POST | Sticker templates |
-| `/qr/generate/` | POST | Generate QR sticker PDF |
-| `/notifications/` | GET | Notification logs (admin) |
-| `/audit/` | GET | Audit logs (admin) |
+**OpenAPI 3:** Authenticated users can open **`/api/docs/`** (Swagger), **`/api/redoc/`** (ReDoc), or **`/api/schema/`** on the API host (same session as the app). See [docs/README.md](docs/README.md).
 
-## User Roles
+Detailed routing lives in `backend/*/urls.py`. Conceptual diagrams: [docs/technical.md](docs/technical.md).
 
-| Role | Capabilities |
-|------|-------------|
-| **User** | Scan QR codes, onboard/borrow/return assets, view dashboard, search/filter, export to Excel |
-| **Admin** | Everything above + configure custom fields, manage sticker templates, delete assets, manage users, view audit/notification logs |
+---
 
-## Deployment (Production)
+## Deployment
 
-### Pull from GHCR
+**Pull backend image from GHCR**
 
 ```bash
 docker pull ghcr.io/markusbrand/tagly/backend:latest
 ```
 
-### Run with Docker Compose
+**Compose**
 
 ```bash
 docker compose -f docker-compose.yml up -d
 ```
 
-For production, ensure you set proper environment variables (no `DJANGO_DEBUG`, real `DJANGO_SECRET_KEY`, restrict `ALLOWED_HOSTS`, etc.) and remove dev volume mounts.
+Use strong secrets, disable `DJANGO_DEBUG`, restrict `ALLOWED_HOSTS`, and avoid dev volume mounts in production.
 
-### Rollback
+**Rollback**
 
 ```bash
 docker pull ghcr.io/markusbrand/tagly/backend:<previous-sha>
 docker compose up -d
 ```
 
-## Deployment on Raspberry Pi 5
+**Raspberry Pi 5 (ARM64):** Same Compose flow; image is multi-arch. Prefer SSD and wired Ethernet. Example LAN URLs are in `.env.example` (`HOST_IP`).
 
-Tagly is optimized for running on a Raspberry Pi 5 (ARM64). The Docker image is built for both amd64 and arm64 platforms.
+---
 
-### Setup
-
-```bash
-# On your Raspberry Pi 5
-git clone https://github.com/markusbrand/tagly.git
-cd tagly
-
-# Copy and configure environment
-cp .env.example .env
-# Edit .env with your settings (Gmail credentials, Django secret key, etc.)
-
-# Start all services
-docker compose up -d
-
-# Run migrations and create initial admin user
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py createsuperuser
-
-# Access from your network
-# Frontend: http://192.168.0.150:5173
-# Backend API: http://192.168.0.150:8008/api/v1/
-```
-
-If you use **Cloudflare Tunnel** (or any **HTTPS** URL for the UI), set **`VITE_API_URL`** in `.env` to your **public API URL** (e.g. `https://tagly-backend.brandstaetter.rocks/api/v1`). Do **not** leave the default `http://<LAN-IP>:8008` when opening the app at `https://…` — the browser will block calls to a private IP and CORS/cookies will fail.
-
-Also set **`CORS_ALLOWED_ORIGINS`** and **`CSRF_TRUSTED_ORIGINS`** in `.env` to include **`https://tagly.brandstaetter.rocks`** (see `.env.example`), then **`docker compose up -d --force-recreate backend`** — otherwise Django will not send `Access-Control-Allow-Origin` for that origin.
-
-### Hardware Recommendations
-
-- **Raspberry Pi 5** with 8GB RAM (recommended) or 4GB (minimum)
-- **SSD** via USB 3.0 (strongly recommended over SD card for database performance)
-- Wired Ethernet connection for reliable access
-
-## Scaling Notes
-
-Tagly is designed to handle up to 100,000 assets on modest hardware:
-
-- **Database indexes** on commonly filtered fields (status, name, created_at, overdue detection)
-- **Constant-memory Excel export** via XlsxWriter for large datasets
-- **Paginated API responses** (25 items per page by default)
-- **Optimized queries** using Django's select_related/prefetch_related to avoid N+1 patterns
-
-## Project Structure
+## Repository layout
 
 ```
 tagly/
-├── backend/                 # Django backend
-│   ├── tagly/              # Django project (settings, urls, celery)
-│   ├── assets/             # Asset management
-│   ├── borrowing/          # Borrow/return workflow
-│   ├── customers/          # Customer management
-│   ├── custom_fields/      # Dynamic field definitions
-│   ├── notifications/      # Email notifications
-│   ├── qr_generation/      # QR code + PDF generation
-│   ├── audit/              # Audit trail
-│   ├── users/              # Authentication & roles
-│   └── Dockerfile
-├── frontend/               # React frontend
-│   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API clients
-│   │   ├── context/        # React contexts
-│   │   ├── i18n/           # Translations
-│   │   └── theme/          # MUI theme
-│   └── public/
-├── .github/workflows/      # CI/CD
-├── docker-compose.yml      # Full dev stack
-├── .env.example            # Environment template
-└── requirements/           # Project documentation
+├── backend/           # Django project and apps
+├── frontend/          # React (Vite) SPA
+├── docs/              # User guide + technical documentation
+├── requirements/      # Product requirements and ADR
+├── .github/workflows/ # CI + Docker publish to GHCR
+├── docker-compose.yml
+└── .env.example
 ```
+
+---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT License](LICENSE)

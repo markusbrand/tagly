@@ -4,19 +4,33 @@ import { useTranslation } from 'react-i18next';
 import {
   Alert,
   Box,
+  Button,
   Card,
   Chip,
   CircularProgress,
+  FormControlLabel,
+  Stack,
+  Switch,
   Typography,
 } from '@mui/material';
-import { QrCodeScanner as ScannerIcon } from '@mui/icons-material';
-import { QRScannerService } from '../services/scanner';
+import {
+  QrCodeScanner as ScannerIcon,
+  Cameraswitch as CameraSwitchIcon,
+} from '@mui/icons-material';
+import {
+  QRScannerService,
+  sortCamerasForQrScan,
+  resolveInitialCameraIndex,
+  storePreferredCameraId,
+  type CameraDevice,
+} from '../services/scanner';
 import { assetService, type AssetDetail } from '../services/assets';
 import type { AxiosError } from 'axios';
 
 type ScanMode = 'idle' | 'scanning' | 'onboarding' | 'borrowing' | 'returning';
 
 const SCANNER_ELEMENT_ID = 'qr-reader';
+const AUTO_CAMERA_INTERVAL_MS = 3200;
 
 const MODE_CHIP_COLORS: Record<string, 'success' | 'primary' | 'warning'> = {
   onboarding: 'success',
@@ -32,6 +46,39 @@ export default function Scanner() {
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const processedRef = useRef(false);
+
+  const [orderedCameras, setOrderedCameras] = useState<CameraDevice[]>([]);
+  const [cameraIndex, setCameraIndex] = useState(0);
+  const [autoCycleCameras, setAutoCycleCameras] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    QRScannerService.listCameras()
+      .then((raw) => {
+        if (cancelled) return;
+        const sorted = sortCamerasForQrScan(raw);
+        setOrderedCameras(sorted);
+        setCameraIndex(resolveInitialCameraIndex(sorted));
+      })
+      .catch((err) => {
+        console.warn('[Scanner] Camera list failed', err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!autoCycleCameras || orderedCameras.length < 2) return;
+    const id = window.setInterval(() => {
+      setCameraIndex((i) => {
+        const next = (i + 1) % orderedCameras.length;
+        storePreferredCameraId(orderedCameras[next].id);
+        return next;
+      });
+    }, AUTO_CAMERA_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [autoCycleCameras, orderedCameras]);
 
   const handleScanSuccess = useCallback(
     async (decodedText: string) => {
@@ -67,33 +114,51 @@ export default function Scanner() {
     [navigate, t],
   );
 
+  const activeCameraId =
+    orderedCameras.length > 0 ? orderedCameras[cameraIndex % orderedCameras.length]?.id : null;
+  const activeCameraLabel =
+    orderedCameras.length > 0
+      ? orderedCameras[cameraIndex % orderedCameras.length]?.label
+      : t('scanner.camera_default');
+
   useEffect(() => {
     const scanner = new QRScannerService();
     scannerRef.current = scanner;
+    let cancelled = false;
 
-    const startScanner = async () => {
+    const run = async () => {
       try {
         setMode('scanning');
+        setError('');
         await scanner.start({
           elementId: SCANNER_ELEMENT_ID,
+          cameraId: activeCameraId,
           onSuccess: handleScanSuccess,
-          onError: (errMsg) => setError(errMsg),
         });
       } catch (err) {
+        if (cancelled) return;
         console.error('[Scanner] Camera start failed', err);
         setError(t('scanner.camera_error'));
         setMode('idle');
       }
     };
 
-    startScanner();
+    run();
 
     return () => {
-      scanner.stop().catch((err) =>
-        console.warn('[Scanner] Stop failed during cleanup', err),
-      );
+      cancelled = true;
+      scanner.stop().catch((e) => console.warn('[Scanner] Stop during cleanup', e));
     };
-  }, [handleScanSuccess, t]);
+  }, [handleScanSuccess, t, activeCameraId]);
+
+  const goToNextCamera = () => {
+    if (orderedCameras.length < 2) return;
+    setCameraIndex((i) => {
+      const next = (i + 1) % orderedCameras.length;
+      storePreferredCameraId(orderedCameras[next].id);
+      return next;
+    });
+  };
 
   const modeKey = mode !== 'idle' && mode !== 'scanning' ? mode : null;
 
@@ -143,6 +208,9 @@ export default function Scanner() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            '& video': {
+              transform: 'scaleX(-1)',
+            },
           }}
         />
 
@@ -166,6 +234,46 @@ export default function Scanner() {
           </Box>
         )}
       </Card>
+
+      <Stack spacing={1.5} sx={{ mt: 2, width: '100%', maxWidth: 400, alignItems: 'stretch' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+          {t('scanner.current_camera')}: <strong>{activeCameraLabel}</strong>
+        </Typography>
+
+        <Button
+          variant="outlined"
+          size="medium"
+          startIcon={<CameraSwitchIcon />}
+          onClick={goToNextCamera}
+          disabled={orderedCameras.length < 2}
+        >
+          {t('scanner.next_camera')}
+        </Button>
+
+        <FormControlLabel
+          sx={{ mx: 0, justifyContent: 'center' }}
+          control={
+            <Switch
+              checked={autoCycleCameras}
+              onChange={(_, v) => setAutoCycleCameras(v)}
+              disabled={orderedCameras.length < 2}
+            />
+          }
+          label={t('scanner.auto_cycle_cameras')}
+        />
+
+        {orderedCameras.length < 2 && (
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            {t('scanner.single_camera_hint')}
+          </Typography>
+        )}
+
+        {autoCycleCameras && orderedCameras.length >= 2 && (
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            {t('scanner.auto_cycle_hint')}
+          </Typography>
+        )}
+      </Stack>
 
       <Typography
         variant="body2"
