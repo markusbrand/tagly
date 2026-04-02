@@ -231,6 +231,8 @@ docker compose exec backend python manage.py createsuperuser
 
 If you use **Cloudflare Tunnel** (or any **HTTPS** URL for the UI), set **`VITE_API_URL`** in `.env` to your **public API URL** (e.g. `https://tagly-backend.brandstaetter.rocks/api/v1`). Do **not** leave the default `http://<LAN-IP>:8008` when opening the app at `https://…` — the browser will block calls to a private IP and CORS/cookies will fail.
 
+Also set **`CORS_ALLOWED_ORIGINS`** and **`CSRF_TRUSTED_ORIGINS`** in `.env` to include **`https://tagly.brandstaetter.rocks`** (see `.env.example`), then **`docker compose up -d --force-recreate backend`** — otherwise Django will not send `Access-Control-Allow-Origin` for that origin.
+
 ### Hardware Recommendations
 
 - **Raspberry Pi 5** with 8GB RAM (recommended) or 4GB (minimum)

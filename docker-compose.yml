@@ -44,12 +44,14 @@ services:
       DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
       DJANGO_DEBUG: "1"
-      ALLOWED_HOSTS: "*"
+      # Use `*` for local dev; on Cloudflare set explicit hosts in `.env` (see .env.example).
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-*}"
       HOST_IP: "${HOST_IP:-192.168.0.150}"
       # Loaded from project `.env` when present (`docker compose` substitutes variables).
       DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-secret-key}"
-      CORS_ALLOWED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008"
-      CSRF_TRUSTED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008"
+      # MUST include `https://tagly.brandstaetter.rocks` when the SPA is served there — set in `.env` or CORS fails in the browser.
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008}"
+      CSRF_TRUSTED_ORIGINS: "${CSRF_TRUSTED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://${HOST_IP:-192.168.0.150}:5173,http://${HOST_IP:-192.168.0.150}:8008}"
       # Set to 1 in project `.env` on hosts behind Cloudflare Tunnel (HTTPS at edge, HTTP to container).
       DJANGO_BEHIND_HTTPS_PROXY: "${DJANGO_BEHIND_HTTPS_PROXY:-0}"
     volumes:
