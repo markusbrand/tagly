@@ -15,13 +15,17 @@ api.interceptors.response.use(
       const status = error.response.status as number;
       const url = error.config?.url ?? '';
       const isAuthCheck = url.includes('/users/me') || url.includes('/users/login');
+      const isUnauthenticatedMe =
+        url.includes('/users/me') && (status === 401 || status === 403);
       if (status === 401 && !isAuthCheck) {
         window.location.href = '/login';
       }
-      console.error(
-        `[API] ${error.config?.method?.toUpperCase()} ${url} → ${status}`,
-        error.response.data,
-      );
+      if (!isUnauthenticatedMe) {
+        console.error(
+          `[API] ${error.config?.method?.toUpperCase()} ${url} → ${status}`,
+          error.response.data,
+        );
+      }
     } else if (error.request) {
       console.error('[API] No response received – possible network error', error.message);
     } else {
