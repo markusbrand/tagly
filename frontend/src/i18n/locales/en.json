@@ -153,6 +153,8 @@
     "email": "Email",
     "role": "Role",
     "language": "Language",
+    "lang_en": "English",
+    "lang_de": "German",
     "no_users": "No users found"
   },
   "qr": {

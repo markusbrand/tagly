@@ -13,6 +13,17 @@ from .services import generate_sticker_pdf
 
 logger = logging.getLogger(__name__)
 
+_FILENAME_UNSAFE = '<>:"/\\|?*'
+
+
+def _sticker_pdf_filename(template_name: str) -> str:
+    """First 10 characters of template name, sanitized for use in a download filename."""
+    prefix = template_name[:10]
+    prefix = "".join("_" if c in _FILENAME_UNSAFE else c for c in prefix).strip()
+    if not prefix:
+        prefix = "template"
+    return f"tagly_stickers_{prefix}.pdf"
+
 
 class StickerTemplateListCreateView(generics.ListCreateAPIView):
     queryset = StickerTemplate.objects.all()
@@ -67,5 +78,5 @@ class GenerateStickersView(APIView):
         )
 
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="tagly_stickers_{template.name}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="{_sticker_pdf_filename(template.name)}"'
         return response

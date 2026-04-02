@@ -30,6 +30,11 @@ import { usersService, type CreateUserData, type UpdateUserData } from '../../se
 
 const ROLES = ['USER', 'ADMIN'] as const;
 
+const LANGUAGES: { value: 'en' | 'de'; labelKey: string }[] = [
+  { value: 'en', labelKey: 'admin.lang_en' },
+  { value: 'de', labelKey: 'admin.lang_de' },
+];
+
 export default function UserManagement() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
@@ -42,6 +47,7 @@ export default function UserManagement() {
     email: '',
     password: '',
     role: 'USER',
+    language: 'en',
   });
   const [creating, setCreating] = useState(false);
 
@@ -73,7 +79,7 @@ export default function UserManagement() {
     try {
       await usersService.create(createForm);
       setCreateOpen(false);
-      setCreateForm({ username: '', email: '', password: '', role: 'USER' });
+      setCreateForm({ username: '', email: '', password: '', role: 'USER', language: 'en' });
       await fetchUsers();
     } catch (err) {
       console.error('[UserManagement] Create failed', err);
@@ -85,7 +91,7 @@ export default function UserManagement() {
 
   const openEdit = (user: User) => {
     setEditUser(user);
-    setEditForm({ role: user.role });
+    setEditForm({ role: user.role, language: user.language as CreateUserData['language'] });
     setEditOpen(true);
   };
 
@@ -138,27 +144,30 @@ export default function UserManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.role}
-                      color={user.role === 'ADMIN' ? 'primary' : 'default'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>{user.language}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title={t('common.edit')}>
-                      <IconButton size="small" onClick={() => openEdit(user)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
+              users.map((user) => {
+                const isAdminRow = user.role === 'ADMIN' || user.is_superuser;
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={isAdminRow ? 'ADMIN' : user.role}
+                        color={isAdminRow ? 'primary' : 'default'}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{user.language}</TableCell>
+                    <TableCell align="right">
+                      <Tooltip title={t('common.edit')}>
+                        <IconButton size="small" onClick={() => openEdit(user)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -210,6 +219,21 @@ export default function UserManagement() {
               <MenuItem key={role} value={role}>{role}</MenuItem>
             ))}
           </TextField>
+          <TextField
+            label={t('admin.language', 'Language')}
+            value={createForm.language}
+            onChange={(e) =>
+              setCreateForm({ ...createForm, language: e.target.value as CreateUserData['language'] })
+            }
+            select
+            fullWidth
+          >
+            {LANGUAGES.map((lang) => (
+              <MenuItem key={lang.value} value={lang.value}>
+                {t(lang.labelKey)}
+              </MenuItem>
+            ))}
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>{t('common.cancel')}</Button>
@@ -226,7 +250,7 @@ export default function UserManagement() {
       {/* Edit user role dialog */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>{t('admin.edit_user')}</DialogTitle>
-        <DialogContent sx={{ pt: '8px !important' }}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}>
           <TextField
             label={t('admin.role', 'Role')}
             value={editForm.role ?? ''}
@@ -236,6 +260,21 @@ export default function UserManagement() {
           >
             {ROLES.map((role) => (
               <MenuItem key={role} value={role}>{role}</MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label={t('admin.language', 'Language')}
+            value={editForm.language ?? 'en'}
+            onChange={(e) =>
+              setEditForm({ ...editForm, language: e.target.value as CreateUserData['language'] })
+            }
+            select
+            fullWidth
+          >
+            {LANGUAGES.map((lang) => (
+              <MenuItem key={lang.value} value={lang.value}>
+                {t(lang.labelKey)}
+              </MenuItem>
             ))}
           </TextField>
         </DialogContent>

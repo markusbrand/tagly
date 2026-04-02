@@ -8,10 +8,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id", "username", "email", "role",
+            "id", "username", "email", "role", "is_superuser",
             "language", "theme_preference", "notification_enabled",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "is_superuser"]
 
 
 class LoginSerializer(serializers.Serializer):
@@ -24,8 +24,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "password", "role"]
+        fields = ["id", "username", "email", "password", "role", "language"]
         read_only_fields = ["id"]
+        extra_kwargs = {"language": {"required": False}}
 
     def create(self, validated_data):
         password = validated_data.pop("password")
@@ -33,6 +34,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class UserAdminUpdateSerializer(serializers.ModelSerializer):
+    """Admin PATCH: role, language, and account status."""
+
+    class Meta:
+        model = User
+        fields = ["role", "language", "is_active"]
 
 
 class UserPreferencesSerializer(serializers.ModelSerializer):

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .permissions import IsAdmin, IsAuthenticated
 from .serializers import (
     LoginSerializer,
+    UserAdminUpdateSerializer,
     UserCreateSerializer,
     UserPreferencesSerializer,
     UserSerializer,
@@ -89,6 +90,30 @@ class UserListView(generics.ListCreateAPIView):
         logger.info("Admin %s created user %s", self.request.user.username, user.username)
 
 
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    """Admin: get or update a user (role, language, is_active)."""
+
+    permission_classes = [IsAdmin]
+    queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in ("PUT", "PATCH"):
+            return UserAdminUpdateSerializer
+        return UserSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+        u = self.get_object()
+        logger.info(
+            "Admin %s updated user %s (role=%s, language=%s, is_active=%s)",
+            self.request.user.username,
+            u.username,
+            u.role,
+            u.language,
+            u.is_active,
+        )
+
+
 class CsrfTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -96,8 +121,10 @@ class CsrfTokenView(APIView):
     def get(self, request):
         from django.middleware.csrf import get_token
 
-        get_token(request)
-        return Response({"detail": "CSRF cookie set."})
+        token = get_token(request)
+        # Expose token in JSON so SPA clients on another origin (e.g. Vite :5173 → API :8008)
+        # can send X-CSRFToken; document.cookie on the dev server cannot read API cookies.
+        return Response({"detail": "CSRF cookie set.", "csrfToken": token})
 
 
 class HealthCheckView(APIView):

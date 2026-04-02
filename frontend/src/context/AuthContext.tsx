@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authService.getMe();
       setUser(response.data);
+      await authService.getCsrfToken();
     } catch {
       setUser(null);
     }
@@ -41,8 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     authService
       .getMe()
-      .then((response) => {
-        if (mounted) setUser(response.data);
+      .then(async (response) => {
+        if (!mounted) return;
+        setUser(response.data);
+        await authService.getCsrfToken();
       })
       .catch(() => {
         if (mounted) setUser(null);
@@ -61,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authService.getCsrfToken();
       const response = await authService.login(credentials);
       setUser(response.data);
+      await authService.getCsrfToken();
       navigate('/dashboard');
     },
     [navigate],
@@ -80,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isLoading,
       isAuthenticated: user !== null,
-      isAdmin: user?.role === 'ADMIN',
+      isAdmin: user?.role === 'ADMIN' || user?.is_superuser === true,
       login,
       logout,
       refreshUser,
