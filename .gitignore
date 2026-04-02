@@ -15,6 +15,10 @@ staticfiles/
 media/
 locale/*.mo
 
+# Celery Beat — file-backed schedule DB created in CWD (e.g. backend/ on Pi/Docker)
+celerybeat-schedule
+celerybeat-schedule.*
+
 # Node
 node_modules/
 frontend/dist/
