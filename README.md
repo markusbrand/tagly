@@ -229,6 +229,8 @@ docker compose exec backend python manage.py createsuperuser
 # Backend API: http://192.168.0.150:8008/api/v1/
 ```
 
+If you use **Cloudflare Tunnel** (or any **HTTPS** URL for the UI), set **`VITE_API_URL`** in `.env` to your **public API URL** (e.g. `https://tagly-backend.brandstaetter.rocks/api/v1`). Do **not** leave the default `http://<LAN-IP>:8008` when opening the app at `https://…` — the browser will block calls to a private IP and CORS/cookies will fail.
+
 ### Hardware Recommendations
 
 - **Raspberry Pi 5** with 8GB RAM (recommended) or 4GB (minimum)
