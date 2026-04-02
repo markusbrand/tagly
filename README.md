@@ -56,6 +56,11 @@ docker compose up -d
 # Run database migrations
 docker compose exec backend python manage.py migrate
 
+# If migrate failed partway (e.g. before app migrations existed) and errors persist,
+# reset the Postgres volume and migrate again (removes local DB data):
+#   docker compose down -v && docker compose up -d
+#   docker compose exec backend python manage.py migrate
+
 # Create a superuser
 docker compose exec backend python manage.py createsuperuser
 
