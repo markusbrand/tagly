@@ -45,6 +45,29 @@ Parse **logs**, **screenshots**, **traces/telemetry**, and failure output to **c
 3. **Collaborate**: file crisp bugs for **Luke** / **Leia**; pull **C-3PO** when you need **external** comparative research on tools or standards—not to own their lane.
 4. **Do not** ship features; you **challenge** and **certify** (or **reject**) readiness.
 
+## Recorded review: Tagly deployment hardening (split domain + Cloudflare Tunnel)
+
+**Scope**: Recent changes for **HTTPS public UI** (`tagly.brandstaetter.rocks`) calling **HTTPS API** (`tagly-backend.brandstaetter.rocks`), Django behind **reverse proxy**, **Docker Compose** env passthrough, **Vite** `allowedHosts`, **frontend API** logging. **Not** a full pentest; configuration on the Pi (firewall, Cloudflare Access, secrets rotation) remains operator responsibility.
+
+### Acceptable / aligned
+
+- **CORS / CSRF (OWASP A05:2021 Security Misconfiguration)**: Explicit **`CORS_ALLOWED_ORIGINS`** and **`CSRF_TRUSTED_ORIGINS`** allowlists (trimmed), **`CORS_ALLOW_CREDENTIALS`**, session login with **`withCredentials`** — appropriate for cookie-based SPA + API on different subdomains when both are **HTTPS** and origins are listed.
+- **TLS trust at origin (A05)**: **`DJANGO_BEHIND_HTTPS_PROXY`** gating **`SECURE_PROXY_SSL_HEADER`** / **`USE_X_FORWARDED_HOST`** avoids treating proxied HTTPS as HTTP; **Secure** session/CSRF cookies follow — **if** only trusted proxies (e.g. `cloudflared`) reach Django. **Do not** enable proxy trust on paths reachable by untrusted clients without a real proxy striping/forging headers.
+- **Secrets (A07:2021)**: **`DJANGO_SECRET_KEY`** injected from **`.env`** via Compose substitution — not hardcoded in source; **`.env`** gitignored.
+- **Repo hygiene**: **`celerybeat-schedule`** gitignored — avoids leaking/scheduling state in Git.
+- **Client noise vs security (A09:2021)**: Suppressing **`console.error`** for expected **401/403** on **`/users/me/`** does not weaken server-side auth; avoid logging **passwords** or tokens in client code (unchanged expectation).
+
+### Follow-up / residual risk (not blocking home-lab use; track for stricter production)
+
+- **Brute force (A07)**: Login endpoint has **no application-level rate limiting** in reviewed code — rely on **Cloudflare**, **fail2ban**, or network controls for abuse; consider throttling login in Django for higher assurance.
+- **Compose default `ALLOWED_HOSTS`**: **`${ALLOWED_HOSTS:-*}`** is permissive for **local dev**; on internet-facing hosts set **explicit** hosts in **`.env`** (already documented in `.env.example`).
+- **Vite `allowedHosts`**: Includes **`.brandstaetter.rocks`** — convenient; any future hostname under that registrable domain could be accepted by the dev server’s Host check. Acceptable for controlled DNS; tighten to explicit FQDNs if threat model requires.
+- **Forwarded headers**: If Django were reachable **directly** on LAN/WAN without the proxy, a client could send **`X-Forwarded-Proto: https`** — keep **firewall** rules so production traffic only enters via **Cloudflare Tunnel** / intended path.
+
+### Critical
+
+- **None identified** in the reviewed changes for the described deployment model, assuming **TLS to the browser**, **trusted tunnel to origin**, and **secrets only in `.env`**.
+
 ## File location
 
 This persona lives at `team/vader.md`. Yoda routes **QA, security review, and production readiness testing** here by default.
