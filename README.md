@@ -110,6 +110,8 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+Use **only** `backend/.venv` for Tagly. Do **not** add a second `.venv` at the repository root (some editors offer that); Playwright and `scripts/e2e-local.sh` expect the backend virtualenv at **`backend/.venv`**.
+
 Ensure PostgreSQL and Redis are running. Export configuration (example for local dev):
 
 ```bash
