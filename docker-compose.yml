@@ -131,8 +131,6 @@ services:
       VITE_DEV_PROXY_TARGET: ${VITE_DEV_PROXY_TARGET:-http://backend:8008}
       # Optional: fix Vite HMR WebSocket when the dev server is reached via tunnel (public hostname, no https://).
       VITE_DEV_PUBLIC_HOST: ${VITE_DEV_PUBLIC_HOST:-}
-      # Optional: full public origin if not https://$VITE_DEV_PUBLIC_HOST (rare).
-      VITE_DEV_PUBLIC_ORIGIN: ${VITE_DEV_PUBLIC_ORIGIN:-}
       VITE_DEV_HMR_CLIENT_PORT: ${VITE_DEV_HMR_CLIENT_PORT:-443}
       VITE_DEV_HMR_PROTOCOL: ${VITE_DEV_HMR_PROTOCOL:-wss}
     volumes:

@@ -16,6 +16,7 @@ import {
 import {
   QrCodeScanner as ScannerIcon,
   Cameraswitch as CameraSwitchIcon,
+  Videocam as VideocamIcon,
 } from '@mui/icons-material';
 import {
   QRScannerService,
@@ -50,6 +51,13 @@ export default function Scanner() {
   const [orderedCameras, setOrderedCameras] = useState<CameraDevice[]>([]);
   const [cameraIndex, setCameraIndex] = useState(0);
   const [autoCycleCameras, setAutoCycleCameras] = useState(false);
+  /** Live preview only after an explicit user action (required for camera + video.play on Firefox / Safari). */
+  const [cameraPreviewActive, setCameraPreviewActive] = useState(false);
+
+  const cameraIndexRef = useRef(cameraIndex);
+  const cameraPreviewActiveRef = useRef(cameraPreviewActive);
+  cameraIndexRef.current = cameraIndex;
+  cameraPreviewActiveRef.current = cameraPreviewActive;
 
   useEffect(() => {
     let cancelled = false;
@@ -68,17 +76,16 @@ export default function Scanner() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!autoCycleCameras || orderedCameras.length < 2) return;
-    const id = window.setInterval(() => {
-      setCameraIndex((i) => {
-        const next = (i + 1) % orderedCameras.length;
-        storePreferredCameraId(orderedCameras[next].id);
-        return next;
-      });
-    }, AUTO_CAMERA_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [autoCycleCameras, orderedCameras]);
+  const stopScanner = useCallback(async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+      } catch (e) {
+        console.warn('[Scanner] stop()', e);
+      }
+      scannerRef.current = null;
+    }
+  }, []);
 
   const handleScanSuccess = useCallback(
     async (decodedText: string) => {
@@ -114,6 +121,60 @@ export default function Scanner() {
     [navigate, t],
   );
 
+  const startScannerWithHandler = useCallback(
+    async (cameraId: string | null) => {
+      await stopScanner();
+      const scanner = new QRScannerService();
+      scannerRef.current = scanner;
+      await scanner.start({
+        elementId: SCANNER_ELEMENT_ID,
+        cameraId: cameraId ?? undefined,
+        onSuccess: handleScanSuccess,
+      });
+      setMode('scanning');
+    },
+    [handleScanSuccess, stopScanner],
+  );
+
+  useEffect(() => {
+    return () => {
+      void stopScanner();
+    };
+  }, [stopScanner]);
+
+  useEffect(() => {
+    if (!autoCycleCameras || orderedCameras.length < 2 || !cameraPreviewActive) return;
+    const id = window.setInterval(() => {
+      void (async () => {
+        if (!cameraPreviewActiveRef.current) return;
+        const i = cameraIndexRef.current;
+        const next = (i + 1) % orderedCameras.length;
+        const nextCam = orderedCameras[next];
+        if (!nextCam) return;
+        storePreferredCameraId(nextCam.id);
+        setCameraIndex(next);
+        try {
+          await startScannerWithHandler(nextCam.id);
+        } catch (e) {
+          console.warn('[Scanner] Auto-cycle camera switch failed', e);
+          setAutoCycleCameras(false);
+          setError(t('scanner.camera_autocycle_blocked'));
+          setCameraPreviewActive(false);
+          setMode('idle');
+          await stopScanner();
+        }
+      })();
+    }, AUTO_CAMERA_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [
+    autoCycleCameras,
+    orderedCameras,
+    cameraPreviewActive,
+    startScannerWithHandler,
+    stopScanner,
+    t,
+  ]);
+
   const activeCameraId =
     orderedCameras.length > 0 ? orderedCameras[cameraIndex % orderedCameras.length]?.id : null;
   const activeCameraLabel =
@@ -121,43 +182,38 @@ export default function Scanner() {
       ? orderedCameras[cameraIndex % orderedCameras.length]?.label
       : t('scanner.camera_default');
 
-  useEffect(() => {
-    const scanner = new QRScannerService();
-    scannerRef.current = scanner;
-    let cancelled = false;
-
-    const run = async () => {
+  const handleStartCamera = () => {
+    void (async () => {
       try {
-        setMode('scanning');
         setError('');
-        await scanner.start({
-          elementId: SCANNER_ELEMENT_ID,
-          cameraId: activeCameraId,
-          onSuccess: handleScanSuccess,
-        });
+        await startScannerWithHandler(activeCameraId);
+        setCameraPreviewActive(true);
       } catch (err) {
-        if (cancelled) return;
         console.error('[Scanner] Camera start failed', err);
         setError(t('scanner.camera_error'));
+        setCameraPreviewActive(false);
         setMode('idle');
       }
-    };
-
-    run();
-
-    return () => {
-      cancelled = true;
-      scanner.stop().catch((e) => console.warn('[Scanner] Stop during cleanup', e));
-    };
-  }, [handleScanSuccess, t, activeCameraId]);
+    })();
+  };
 
   const goToNextCamera = () => {
     if (orderedCameras.length < 2) return;
-    setCameraIndex((i) => {
-      const next = (i + 1) % orderedCameras.length;
-      storePreferredCameraId(orderedCameras[next].id);
-      return next;
-    });
+    const nextIdx = (cameraIndex + 1) % orderedCameras.length;
+    const nextCam = orderedCameras[nextIdx];
+    if (!nextCam) return;
+    storePreferredCameraId(nextCam.id);
+    setCameraIndex(nextIdx);
+    if (!cameraPreviewActive) return;
+    void (async () => {
+      try {
+        setError('');
+        await startScannerWithHandler(nextCam.id);
+      } catch (err) {
+        console.error('[Scanner] Camera switch failed', err);
+        setError(t('scanner.camera_error'));
+      }
+    })();
   };
 
   const modeKey = mode !== 'idle' && mode !== 'scanning' ? mode : null;
@@ -214,7 +270,7 @@ export default function Scanner() {
           }}
         />
 
-        {(mode === 'idle' || isProcessing) && (
+        {(!cameraPreviewActive || isProcessing) && (
           <Box
             sx={{
               position: 'absolute',
@@ -224,12 +280,29 @@ export default function Scanner() {
               alignItems: 'center',
               justifyContent: 'center',
               bgcolor: 'rgba(0,0,0,0.3)',
+              gap: 2,
+              px: 2,
             }}
           >
             {isProcessing ? (
               <CircularProgress sx={{ color: 'white' }} />
             ) : (
-              <ScannerIcon sx={{ fontSize: 80, color: 'white', mb: 2 }} />
+              <>
+                <ScannerIcon sx={{ fontSize: 80, color: 'white' }} />
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="primary"
+                  startIcon={<VideocamIcon />}
+                  onClick={handleStartCamera}
+                  sx={{ fontWeight: 700 }}
+                >
+                  {t('scanner.start_camera')}
+                </Button>
+                <Typography variant="caption" color="common.white" sx={{ textAlign: 'center', opacity: 0.9 }}>
+                  {t('scanner.start_camera_hint')}
+                </Typography>
+              </>
             )}
           </Box>
         )}

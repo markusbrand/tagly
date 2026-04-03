@@ -198,8 +198,7 @@ All settings are driven by environment variables. See **`.env.example`** for the
 | `DJANGO_SECRET_KEY` | Required in production |
 | `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` | Host and browser security |
 | `VITE_API_URL` | Frontend → API base URL (must be reachable from the **browser**) |
-| `VITE_DEV_PUBLIC_HOST` | (Dev only) Public UI hostname for HMR + `server.origin` behind HTTPS tunnel |
-| `VITE_DEV_PUBLIC_ORIGIN` | (Dev only) Full public origin if not `https://` + `VITE_DEV_PUBLIC_HOST` |
+| `VITE_DEV_PUBLIC_HOST` | (Dev only) Public UI hostname for HMR WebSocket (`wss`) behind an HTTPS tunnel |
 | `VITE_DEV_PROXY_TARGET` | (Dev only) Django URL for the Vite `/api` proxy. **Docker Compose frontend container:** `http://backend:8008` (default in compose). **Vite on the Pi/host (no Docker):** `http://127.0.0.1:8008` — do **not** use `http://backend:8008` on the host (hostname does not exist). |
 | `EMAIL_*` | SMTP for notifications |
 
@@ -207,7 +206,7 @@ All settings are driven by environment variables. See **`.env.example`** for the
 
 **Split API hostname (optional):** If you set `VITE_API_URL=https://tagly-backend…/api/v1`, the browser calls that host directly — you need a **working** tunnel to Django, plus `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` including the UI origin.
 
-**Vite dev through Cloudflare Tunnel (HMR):** If the browser shows `[vite] failed to connect to websocket`, set (in the environment that starts Vite) `VITE_DEV_PUBLIC_HOST` to your **public UI hostname** (no scheme), e.g. `tagly.brandstaetter.rocks`. That also sets **`server.origin`** to `https://<host>` so Vite generates correct URLs for pre-bundled deps (`/node_modules/.vite/deps/…`). Optional: `VITE_DEV_PUBLIC_ORIGIN` if the public URL is not `https://` + host; `VITE_DEV_HMR_CLIENT_PORT` (default `443`); `VITE_DEV_HMR_PROTOCOL` (`wss` default).
+**Vite dev through Cloudflare Tunnel (HMR):** If the browser shows `[vite] failed to connect to websocket`, set (in the environment that starts Vite) `VITE_DEV_PUBLIC_HOST` to your **public UI hostname** (no scheme), e.g. `tagly.brandstaetter.rocks`. Pre-bundled deps load as **same-origin paths** (`/node_modules/.vite/deps/…`); avoid Cloudflare features that cache or alter those paths. Optional: `VITE_DEV_HMR_CLIENT_PORT` (default `443`); `VITE_DEV_HMR_PROTOCOL` (`wss` default).
 
 **Backend port 8008 — `curl: (56) Recv failure: Connection reset by peer`:** Nothing is serving HTTP correctly on `127.0.0.1:8008` (Django crashed, container exited, or wrong port). On the Pi: `docker compose ps -a`, `docker compose logs backend --tail=100`, and from inside the container `docker compose exec backend curl -sS -o /dev/null -w "%{http_code}\\n" http://127.0.0.1:8008/api/v1/health/`. If that returns **200** but the host curl does not, check port mapping (`8008:8008`) and that nothing else binds host `8008`. Fix backend (DB up, migrations, `ALLOWED_HOSTS`, traceback in logs) before expecting the Vite `/api` proxy to work.
 
