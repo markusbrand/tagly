@@ -176,9 +176,12 @@ All settings are driven by environment variables. See **`.env.example`** for the
 | `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` | Host and browser security |
 | `VITE_API_URL` | Frontend → API base URL (must be reachable from the **browser**) |
 | `VITE_DEV_PUBLIC_HOST` | (Dev only) Public UI hostname for Vite HMR WebSocket behind HTTPS tunnel |
+| `VITE_DEV_PROXY_TARGET` | (Dev only) Django base URL for Vite proxy (default `http://127.0.0.1:8008`; Compose: `http://backend:8008`) |
 | `EMAIL_*` | SMTP for notifications |
 
-**HTTPS / Cloudflare:** If users open the UI at `https://…`, set `VITE_API_URL` to the **public** API URL (not a private LAN IP). Set `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` to include the UI origin, and recreate the backend container after changes.
+**HTTPS / Cloudflare (dev with `npm run dev` / Compose frontend):** Prefer **one tunnel** to the Vite port and keep **`VITE_API_URL=/api/v1`** (Compose default). Vite **proxies** `/api` to Django (`VITE_DEV_PROXY_TARGET`, default `http://backend:8008` in Compose). The browser then calls `https://<your-ui-host>/api/v1/...` — **same origin**, no second hostname, no CORS for the API. Set **`DJANGO_BEHIND_HTTPS_PROXY=1`**, **`CSRF_TRUSTED_ORIGINS`** (and **`CORS_ALLOWED_ORIGINS`** if you still use a split API host elsewhere) to include **`https://<your-ui-host>`**, and **`ALLOWED_HOSTS`** to include that hostname (or `*` for home lab). If the console shows **502** to `https://tagly-backend…` with “CORS missing”, the **API origin is down or unreachable** (tunnel/DNS); the browser blames CORS because Cloudflare’s 502 page has no `Access-Control-Allow-Origin`. Fix the tunnel or switch to the **same-origin proxy** setup above.
+
+**Split API hostname (optional):** If you set `VITE_API_URL=https://tagly-backend…/api/v1`, the browser calls that host directly — you need a **working** tunnel to Django, plus `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` including the UI origin.
 
 **Vite dev through Cloudflare Tunnel (HMR):** If the browser shows `[vite] failed to connect to websocket`, set (in the environment that starts Vite) `VITE_DEV_PUBLIC_HOST` to your **public UI hostname** (no scheme), e.g. `tagly.brandstaetter.rocks`. Optional: `VITE_DEV_HMR_CLIENT_PORT` (default `443`), `VITE_DEV_HMR_PROTOCOL` (`wss` default, or `ws` if you terminate TLS only at the edge and the tunnel speaks HTTP to Vite — rare).
 

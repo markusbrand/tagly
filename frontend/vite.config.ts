@@ -18,6 +18,24 @@ const devHmr =
       }
     : undefined
 
+/**
+ * Proxy /api → Django so the browser uses same origin as the UI (e.g. https://tagly…/api/v1).
+ * Avoids CORS + second Cloudflare tunnel to tagly-backend… during dev.
+ * changeOrigin: false keeps the browser Host (e.g. tagly.brandstaetter.rocks) so session cookies match.
+ */
+const proxyTarget = (process.env.VITE_DEV_PROXY_TARGET ?? 'http://127.0.0.1:8008').trim()
+const devProxy =
+  proxyTarget.length > 0
+    ? {
+        '/api': {
+          target: proxyTarget,
+          changeOrigin: false,
+          secure: false,
+          xfwd: true,
+        },
+      }
+    : undefined
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -31,5 +49,6 @@ export default defineConfig({
       ...extraAllowedHosts,
     ],
     ...(devHmr ? { hmr: devHmr } : {}),
+    ...(devProxy ? { proxy: devProxy } : {}),
   },
 })

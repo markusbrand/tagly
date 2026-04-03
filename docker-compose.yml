@@ -107,9 +107,10 @@ services:
     ports:
       - "5173:5173"
     environment:
-      # If the UI is opened at https://tagly... (Cloudflare), set VITE_API_URL in `.env` to your *public* API URL, e.g.
-      # https://tagly-backend.brandstaetter.rocks/api/v1 — not http://<LAN-IP>:8008 (browser blocks HTTPS→private-IP + CORS/cookies break).
-      VITE_API_URL: ${VITE_API_URL:-http://${HOST_IP:-192.168.0.150}:8008/api/v1}
+      # Default: same-origin API via Vite proxy → backend (one tunnel to :5173 is enough). Set VITE_API_URL to a full
+      # https URL only if you intentionally call a separate API host (then CORS + second tunnel must work).
+      VITE_API_URL: ${VITE_API_URL:-/api/v1}
+      VITE_DEV_PROXY_TARGET: ${VITE_DEV_PROXY_TARGET:-http://backend:8008}
       # Optional: fix Vite HMR WebSocket when the dev server is reached via tunnel (public hostname, no https://).
       VITE_DEV_PUBLIC_HOST: ${VITE_DEV_PUBLIC_HOST:-}
       VITE_DEV_HMR_CLIENT_PORT: ${VITE_DEV_HMR_CLIENT_PORT:-443}

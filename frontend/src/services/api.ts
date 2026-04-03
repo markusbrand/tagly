@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8008/api/v1',
+  /** Relative `/api/v1` uses Vite dev proxy to Django (see vite.config.ts). Override with full URL if needed. */
+  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
   withCredentials: true,
   xsrfCookieName: 'csrftoken',
   xsrfHeaderName: 'X-CSRFToken',
