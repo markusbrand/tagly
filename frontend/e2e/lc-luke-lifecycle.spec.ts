@@ -320,7 +320,7 @@ test.describe('LC domain lifecycle (Luke)', () => {
     await page.getByLabel(/Postal Code|Postleitzahl/i).fill('1020');
     await page.getByLabel(/City|Stadt/i).fill('Graz');
     await page.getByLabel(/Country|Land/i).click();
-    await page.getByRole('option', { name: 'Austria' }).click();
+    await page.getByRole('option', { name: /Austria|Österreich/i }).click();
     // Must pass django-phonenumber-field / phonenumbers is_valid_number (e.g. +439998887766 is invalid AT).
     await page.getByLabel(/Phone Number|Telefonnummer/i).fill('+431234567890');
     await page.getByLabel(/Email \(optional\)|E-Mail \(optional\)/i).fill(`newborrower${Date.now()}@lc-e2e.local`);

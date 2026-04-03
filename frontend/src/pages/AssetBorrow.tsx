@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -21,6 +21,7 @@ import { assetService, type AssetDetail } from '../services/assets';
 import { borrowingService } from '../services/borrowing';
 import { customerService, type Country, type Customer } from '../services/customers';
 import { addPendingAction } from '../services/offlineStore';
+import { getLocalizedCountryName } from '../utils/countryDisplay';
 
 interface CustomerForm {
   first_name: string;
@@ -61,7 +62,7 @@ function customerAutocompleteLabel(c: Customer): string {
 
 export default function AssetBorrow() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [asset, setAsset] = useState<AssetDetail | null>(null);
@@ -77,6 +78,14 @@ export default function AssetBorrow() {
   const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
 
   const [countries, setCountries] = useState<Country[]>([]);
+  const sortedCountries = useMemo(() => {
+    const lang = i18n.language;
+    return [...countries].sort((a, b) => {
+      const na = getLocalizedCountryName(a.code, lang, a.name);
+      const nb = getLocalizedCountryName(b.code, lang, b.name);
+      return na.localeCompare(nb, lang, { sensitivity: 'base' });
+    });
+  }, [countries, i18n.language]);
   const [borrowedFrom, setBorrowedFrom] = useState(toLocalDateTimeString(new Date()));
   const [borrowedUntil, setBorrowedUntil] = useState('');
   const [notes, setNotes] = useState('');
@@ -373,9 +382,9 @@ export default function AssetBorrow() {
                   fullWidth
                   select
                 >
-                  {countries.map((c) => (
+                  {sortedCountries.map((c) => (
                     <MenuItem key={c.code} value={c.code}>
-                      {c.name}
+                      {getLocalizedCountryName(c.code, i18n.language, c.name)}
                     </MenuItem>
                   ))}
                 </TextField>
