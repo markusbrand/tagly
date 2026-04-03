@@ -57,13 +57,23 @@ services:
       LOGIN_THROTTLE_RATE: "${LOGIN_THROTTLE_RATE:-30/minute}"
     volumes:
       - ./backend:/app
-    command: python manage.py runserver 0.0.0.0:8008
+    # Apply DB schema before serving; health hits SessionMiddleware (DB-backed sessions), so without
+    # migrate the check returns 5xx and frontend (depends_on: healthy) never starts — common on fresh Pi pulls.
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8008"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8008/api/v1/health/ -o /dev/null || exit 1"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/api/v1/health/', timeout=5)",
+        ]
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
   celery_worker:
     build: ./backend
