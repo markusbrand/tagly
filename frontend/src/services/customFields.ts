@@ -15,11 +15,18 @@ export interface CustomFieldDefinition {
 
 export type CustomFieldFormData = Omit<CustomFieldDefinition, 'id' | 'created_at' | 'updated_at'>;
 
+const DEFINITIONS_PAGE_SIZE = 2000;
+
 export const customFieldsService = {
   listDefinitions: (entityType?: string) =>
     api.get<{ results: CustomFieldDefinition[]; count: number }>(
       '/custom-fields/definitions/',
-      { params: entityType ? { entity_type: entityType } : {} },
+      {
+        params: {
+          page_size: DEFINITIONS_PAGE_SIZE,
+          ...(entityType ? { entity_type: entityType } : {}),
+        },
+      },
     ),
 
   createDefinition: (data: CustomFieldFormData) =>

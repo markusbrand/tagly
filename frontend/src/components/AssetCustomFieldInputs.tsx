@@ -147,7 +147,25 @@ export function AssetCustomFieldInputs({
           );
         }
 
-        return null;
+        console.warn(
+          '[AssetCustomFieldInputs] Unknown field_type, using text fallback:',
+          d.field_type,
+          'id=',
+          d.id,
+        );
+        return (
+          <TextField
+            key={d.id}
+            label={`${d.name} (${d.field_type})`}
+            required={d.is_mandatory}
+            value={(values[fid] as string) ?? ''}
+            onChange={(e) => onChange(fid, e.target.value)}
+            fullWidth
+            disabled={disabled}
+            error={Boolean(err)}
+            helperText={err}
+          />
+        );
       })}
     </Box>
   );

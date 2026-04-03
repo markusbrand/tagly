@@ -41,6 +41,7 @@ export function buildCustomFieldsPayload(
       out[key] = typeof raw === 'string' ? raw : '';
       continue;
     }
+    out[key] = typeof raw === 'string' ? raw : raw != null ? String(raw) : '';
   }
   return out;
 }

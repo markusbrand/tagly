@@ -12,6 +12,7 @@ from customers.models import Customer
 from users.permissions import IsAdmin, IsAuthenticated
 
 from .models import CustomFieldDefinition, CustomFieldValue
+from .pagination import CustomFieldDefinitionPagination
 from .serializers import (
     CustomFieldBulkValueSerializer,
     CustomFieldDefinitionCreateSerializer,
@@ -28,6 +29,7 @@ ENTITY_TYPE_MODEL_MAP = {
 
 class CustomFieldDefinitionListCreateView(generics.ListCreateAPIView):
     queryset = CustomFieldDefinition.objects.all()
+    pagination_class = CustomFieldDefinitionPagination
 
     def get_permissions(self):
         if self.request.method == "POST":
