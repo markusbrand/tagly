@@ -25,4 +25,4 @@ The backend exposes **OpenAPI 3** from **drf-spectacular** (generated from DRF r
 | `/api/docs/` | Swagger UI |
 | `/api/redoc/` | ReDoc |
 
-CI runs `python manage.py spectacular --validate --fail-on-warn` so schema regressions fail the build.
+CI runs `python manage.py spectacular --validate --fail-on-warn` so schema regressions fail the build. A separate **E2E** job runs Playwright against the app (see root `README.md` and `docs/technical.md` § CI/CD).

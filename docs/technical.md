@@ -278,8 +278,9 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph ci [CI — push / PR to main]
-    B1[ruff + pytest — backend]
+    B1[ruff + pytest + OpenAPI validate — backend]
     B2[eslint + vitest + build — frontend]
+    E2E[Playwright Chromium — E2E job]
   end
   subgraph publish [Docker Publish — push to main]
     D[buildx linux/amd64 + arm64]
@@ -289,7 +290,7 @@ flowchart TB
   merge --> publish
 ```
 
-- **CI:** `.github/workflows/ci.yml` — Postgres + Redis services for Django tests.
+- **CI:** `.github/workflows/ci.yml` — **Backend:** Postgres + Redis services, ruff, pytest, `spectacular --validate --fail-on-warn`. **Frontend:** eslint, Vitest, production build. **E2E:** separate job with Postgres + Redis, Chromium, `npm run test:e2e` (Django + Vite started by Playwright; see `frontend/playwright.config.ts`). **Local E2E:** `npm run test:e2e:local` from `frontend/` runs `scripts/e2e-local.sh` (venv + `.env` + host port mapping).
 - **Images:** `.github/workflows/docker-publish.yml` — backend image only to GHCR; frontend is typically built/served per environment (Compose uses Node container for dev).
 
 ---

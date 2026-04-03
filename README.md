@@ -164,9 +164,9 @@ CI runs **`npm run test:e2e`** in the **E2E – Playwright** job (PostgreSQL + R
 npm run test:e2e:local
 ```
 
-This runs **`scripts/e2e-local.sh`**: puts **`backend/.venv`** on `PATH` (so Django starts for Playwright), loads **`.env`** if present, applies sensible defaults for **`E2E_USERNAME`** / **`E2E_PASSWORD`**, and executes Playwright. Dev servers use ports **18008** (Django) and **15173** (Vite) by default so they do not clash with **`docker compose`** on **8008** / **5173**.
+This runs **`scripts/e2e-local.sh`**: puts **`backend/.venv`** on `PATH` (so Django starts for Playwright), loads **`.env`** via **python-dotenv** (same keys as Django; avoids shell-unsafe lines in `.env`), maps **`POSTGRES_HOST_PORT`** / **`REDIS_HOST_PORT`** to **`DB_PORT`** / **`REDIS_URL`** when you use Docker-published ports, sets defaults for **`E2E_USERNAME`** / **`E2E_PASSWORD`**, then runs Playwright. Dev servers use ports **18008** (Django) and **15173** (Vite) by default so they do not clash with **`docker compose`** on **8008** / **5173**.
 
-**UI mode:** `npm run test:e2e:ui` (after the same env as above — use `bash ../scripts/e2e-local.sh` with `exec npm run test:e2e:ui` manually or export vars from `.env`).
+**Playwright UI mode (same env as `test:e2e:local`):** `npm run test:e2e:local:ui`
 
 Details: `frontend/playwright.config.ts`, `requirements/test-strategy.md`.
 

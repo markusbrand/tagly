@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:local": "bash ../scripts/e2e-local.sh",
+    "test:e2e:local:ui": "env E2E_NPM_SCRIPT=test:e2e:ui bash ../scripts/e2e-local.sh",
     "test:e2e:ui": "playwright test --ui",
     "preview": "vite preview"
   },

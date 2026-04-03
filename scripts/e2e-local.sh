@@ -62,4 +62,6 @@ export DJANGO_DEBUG="${DJANGO_DEBUG:-0}"
 export E2E_USERNAME="${E2E_USERNAME:-e2e_user}"
 export E2E_PASSWORD="${E2E_PASSWORD:-TaglyE2E_Local_Only_1}"
 
-exec npm run test:e2e "$@"
+# Default `test:e2e`; set E2E_NPM_SCRIPT=test:e2e:ui for Playwright UI mode.
+NPM_SCRIPT="${E2E_NPM_SCRIPT:-test:e2e}"
+exec npm run "$NPM_SCRIPT" -- "$@"

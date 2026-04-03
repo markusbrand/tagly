@@ -96,7 +96,7 @@
 ### E2E — how to run
 
 - **CI**: Job `E2E – Playwright` (`.github/workflows/ci.yml`) installs Chromium, starts Django + Vite via `frontend/playwright.config.ts`, runs `npm run test:e2e`.
-- **Local**: PostgreSQL + Redis must be reachable (e.g. `docker compose up -d db redis`). Put `DB_*` / `REDIS_URL` in project `.env` if host ports differ from 5432/6379. Use **`npm run test:e2e:local`** from `frontend/` (runs `scripts/e2e-local.sh`: `backend/.venv` on `PATH`, loads `.env`). Playwright uses ports **18008** / **15173** by default (not **8008** / **5173**) so a running full stack on the default ports is not accidentally reused. User seed: `ensure_e2e_user` runs on backend startup. Also: `npm run test:e2e`, `npm run test:e2e:ui` (with env set manually or via `.env`).
+- **Local**: PostgreSQL + Redis must be reachable (e.g. `docker compose up -d db redis`). Use **`npm run test:e2e:local`** from `frontend/` (`scripts/e2e-local.sh`: `backend/.venv` on `PATH`, `.env` via python-dotenv, optional `POSTGRES_HOST_PORT`/`REDIS_HOST_PORT` mapping). **`npm run test:e2e:local:ui`** — same env, Playwright UI mode. Playwright uses ports **18008** / **15173** by default (not **8008** / **5173**). User seed: `ensure_e2e_user` on backend startup. Raw: `npm run test:e2e`, `npm run test:e2e:ui` if env is exported manually.
 
 ---
 
