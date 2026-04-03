@@ -44,8 +44,9 @@ services:
       DB_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
       DJANGO_DEBUG: "1"
-      # Use `*` for local dev; on Cloudflare set explicit hosts in `.env` (see .env.example).
-      ALLOWED_HOSTS: "${ALLOWED_HOSTS:-*}"
+      # Always allow loopback first: the container healthcheck calls http://127.0.0.1:8008/… (Host ≠ "localhost").
+      # `.env` often lists tunnel hostnames only — without this, the probe gets DisallowedHost and stays unhealthy.
+      ALLOWED_HOSTS: "127.0.0.1,localhost,${ALLOWED_HOSTS:-*}"
       HOST_IP: "${HOST_IP:-192.168.0.150}"
       # Loaded from project `.env` when present (`docker compose` substitutes variables).
       DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-secret-key}"
