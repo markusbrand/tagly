@@ -9,6 +9,11 @@ const extraAllowedHosts = (process.env.VITE_ALLOWED_HOSTS ?? '')
 
 /** When the dev server is reached via Cloudflare Tunnel (HTTPS public host), set e.g. VITE_DEV_PUBLIC_HOST=tagly.brandstaetter.rocks so HMR uses wss:443. */
 const devPublicHost = (process.env.VITE_DEV_PUBLIC_HOST ?? '').trim()
+/** Public origin the browser uses (https://…). Helps module URLs behind a reverse proxy / tunnel. Override with VITE_DEV_PUBLIC_ORIGIN if needed. */
+const devPublicOrigin =
+  devPublicHost.length > 0
+    ? (process.env.VITE_DEV_PUBLIC_ORIGIN ?? `https://${devPublicHost}`).trim()
+    : undefined
 const devHmr =
   devPublicHost.length > 0
     ? {
@@ -32,6 +37,22 @@ const devProxy =
           changeOrigin: false,
           secure: false,
           xfwd: true,
+          timeout: 120_000,
+          configure: (proxy: unknown) => {
+            // http-proxy — log upstream failures (e.g. backend down, wrong VITE_DEV_PROXY_TARGET).
+            ;(proxy as { on: (e: string, cb: (err: Error) => void) => void }).on(
+              'error',
+              (err: Error) => {
+                console.error(
+                  '[vite] /api proxy error:',
+                  err.message,
+                  '| target:',
+                  proxyTarget,
+                  '| If Vite runs on the Pi host (not Docker), use VITE_DEV_PROXY_TARGET=http://127.0.0.1:8008 (not http://backend:8008).',
+                )
+              },
+            )
+          },
         },
       }
     : undefined
@@ -41,6 +62,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
+    ...(devPublicOrigin ? { origin: devPublicOrigin } : {}),
     allowedHosts: [
       'localhost',
       '127.0.0.1',
