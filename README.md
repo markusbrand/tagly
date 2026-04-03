@@ -149,6 +149,29 @@ Serve the `dist/` output with a static host or CDN; configure CORS and CSRF on D
 
 ---
 
+## End-to-end tests (Playwright)
+
+CI runs **`npm run test:e2e`** in the **E2E – Playwright** job (PostgreSQL + Redis services, Chromium).
+
+**Local (recommended wrapper):**
+
+1. Start database and broker only, e.g. `docker compose up -d db redis`.
+2. Create **`backend/.venv`** and install deps: `pip install -r backend/requirements.txt`.
+3. If Postgres/Redis use **non-default host ports**, set **`DB_PORT`** / **`REDIS_URL`** in project **`.env`** (same as for Django on the host — see `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in `.env.example`).
+4. From **`frontend/`**: `npm ci` once, then:
+
+```bash
+npm run test:e2e:local
+```
+
+This runs **`scripts/e2e-local.sh`**: puts **`backend/.venv`** on `PATH` (so Django starts for Playwright), loads **`.env`** if present, applies sensible defaults for **`E2E_USERNAME`** / **`E2E_PASSWORD`**, and executes Playwright. Dev servers use ports **18008** (Django) and **15173** (Vite) by default so they do not clash with **`docker compose`** on **8008** / **5173**.
+
+**UI mode:** `npm run test:e2e:ui` (after the same env as above — use `bash ../scripts/e2e-local.sh` with `exec npm run test:e2e:ui` manually or export vars from `.env`).
+
+Details: `frontend/playwright.config.ts`, `requirements/test-strategy.md`.
+
+---
+
 ## Celery (backend tasks)
 
 Required for scheduled overdue checks and notification dispatch. From `backend/` with the same env as Django:
@@ -250,6 +273,7 @@ docker compose up -d
 tagly/
 ├── backend/           # Django project and apps
 ├── frontend/          # React (Vite) SPA
+├── scripts/           # Helper scripts (e.g. Playwright local E2E)
 ├── docs/              # User guide + technical documentation
 ├── requirements/      # Product requirements and ADR
 ├── .github/workflows/ # CI + Docker publish to GHCR
