@@ -13,7 +13,7 @@ class TestEnsureE2EUserCommand:
         assert User.objects.filter(username='e2e_user').count() == 1
         user = User.objects.get(username='e2e_user')
         assert user.check_password('TaglyE2E_Local_Only_1')
-        assert user.role == User.Role.USER
+        assert user.role == User.Role.ADMIN
 
 
 @pytest.mark.django_db

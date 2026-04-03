@@ -41,6 +41,7 @@ class CustomFieldDefinitionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomFieldDefinition
         fields = [
+            "id",
             "name",
             "entity_type",
             "field_type",
@@ -49,6 +50,7 @@ class CustomFieldDefinitionCreateSerializer(serializers.ModelSerializer):
             "validation_rules",
             "display_order",
         ]
+        read_only_fields = ["id"]
 
     def validate(self, attrs):
         return CustomFieldDefinitionSerializer.validate(self, attrs)
