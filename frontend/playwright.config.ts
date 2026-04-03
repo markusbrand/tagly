@@ -1,9 +1,14 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const backendDir = join(__dirname, '..', 'backend');
+
+/** Prefer `backend/.venv` so Playwright matches `scripts/e2e-local.sh` and avoids system Python without Django. */
+const backendVenvPython = join(backendDir, '.venv', 'bin', 'python');
+const djangoPython = existsSync(backendVenvPython) ? backendVenvPython : (process.env.PYTHON ?? 'python');
 
 /** CI uses 8008/5173. Locally default 18008/15173 so a running `docker compose` UI/API on 8008/5173 does not get reused by mistake (that would skip migrate + ensure_e2e_user). */
 const isCi = !!process.env.CI;
@@ -54,7 +59,7 @@ export default defineConfig({
   // Order matters: backend first, then Vite (same order as in Playwright’s array semantics).
   webServer: [
     {
-      command: `python manage.py migrate --noinput && python manage.py ensure_e2e_user && python manage.py runserver 0.0.0.0:${backendPort}`,
+      command: `${djangoPython} manage.py migrate --noinput && ${djangoPython} manage.py ensure_e2e_user && ${djangoPython} manage.py runserver 0.0.0.0:${backendPort}`,
       cwd: backendDir,
       env: backendWebEnv as { [key: string]: string },
       url: `${backendOrigin}/api/v1/health/`,

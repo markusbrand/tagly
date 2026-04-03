@@ -1,14 +1,16 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const python = process.env.PYTHON ?? 'python';
+const backendRoot = path.resolve(process.cwd(), '..', 'backend');
+const venvPy = path.join(backendRoot, '.venv', 'bin', 'python');
+const python = existsSync(venvPy) ? venvPy : (process.env.PYTHON ?? 'python');
 
 /**
  * Run Django management command against the same backend tree as Playwright’s webServer.
  * Ownership: R2-D2 (wiring) + Luke (domain commands).
  */
 export function runDjangoManage(args: string[]): string {
-  const backendRoot = path.resolve(process.cwd(), '..', 'backend');
   try {
     return execFileSync(python, ['manage.py', ...args], {
       cwd: backendRoot,
