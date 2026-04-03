@@ -21,7 +21,9 @@ import {
 import type { AxiosError } from 'axios';
 import { AssetCustomFieldInputs } from '../components/AssetCustomFieldInputs';
 import { buildCustomFieldsPayload } from '../utils/assetCustomFieldPayload';
+import { flattenDrfDetail, firstDrfFieldMessage } from '../utils/drfErrorDetail';
 import { assetService } from '../services/assets';
+import { authService } from '../services/auth';
 import { customFieldsService, type CustomFieldDefinition } from '../services/customFields';
 import { addPendingAction } from '../services/offlineStore';
 import {
@@ -103,6 +105,11 @@ export default function AssetOnboarding() {
     setIsSubmitting(true);
 
     try {
+      try {
+        await authService.getCsrfToken();
+      } catch (e) {
+        console.warn('[Onboarding] CSRF refresh before create failed', e);
+      }
       const response = await assetService.create({
         guid: decodedGuid,
         custom_fields: customFields,
@@ -110,10 +117,7 @@ export default function AssetOnboarding() {
       setCreatedAssetId(response.data.id);
       setSnackOpen(true);
     } catch (err) {
-      const axiosErr = err as AxiosError<{
-        detail?: string;
-        custom_fields?: Record<string, string | string[]>;
-      }>;
+      const axiosErr = err as AxiosError<Record<string, unknown>>;
 
       if (!axiosErr.response && !navigator.onLine) {
         await addPendingAction({
@@ -124,20 +128,48 @@ export default function AssetOnboarding() {
         setSavedOffline(true);
         setSnackOpen(true);
       } else {
-        const data = axiosErr.response?.data;
+        const raw = axiosErr.response?.data;
+        const data = raw && typeof raw === 'object' ? raw : undefined;
+        let hasCustomFieldApiErrors = false;
+
         if (data?.custom_fields && typeof data.custom_fields === 'object') {
+          hasCustomFieldApiErrors = true;
           const flat: Record<string, string> = {};
-          for (const [k, v] of Object.entries(data.custom_fields)) {
-            flat[k] = Array.isArray(v) ? v.join(' ') : String(v);
+          for (const [k, v] of Object.entries(data.custom_fields as Record<string, unknown>)) {
+            flat[k] = Array.isArray(v) ? v.map(String).join(' ') : String(v);
           }
           setFieldErrors(flat);
         }
-        const detail =
-          typeof data?.detail === 'string'
-            ? data.detail
-            : t('common.error');
-        setError(detail);
-        console.error('[Onboarding] Create failed', axiosErr.message);
+
+        const status = axiosErr.response?.status;
+        let message = '';
+
+        if (status === 403 && data) {
+          const d = flattenDrfDetail(data.detail);
+          if (/csrf/i.test(d)) {
+            message = t('onboarding.error_csrf');
+          }
+        }
+
+        if (!message) {
+          message =
+            firstDrfFieldMessage(data, ['custom_fields']) || flattenDrfDetail(data?.detail);
+        }
+
+        if (!message && !axiosErr.response) {
+          message = t('onboarding.error_network');
+        }
+
+        if (!message && hasCustomFieldApiErrors) {
+          message = t('onboarding.error_fix_fields');
+        }
+
+        if (!message) {
+          message = t('common.error');
+        }
+
+        setError(message);
+        console.error('[Onboarding] Create failed', status, axiosErr.message, raw);
       }
     } finally {
       setIsSubmitting(false);

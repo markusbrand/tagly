@@ -31,7 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await authService.getMe();
       setUser(response.data);
-      await authService.getCsrfToken();
+      try {
+        await authService.getCsrfToken();
+      } catch (e) {
+        console.error('[Auth] getCsrfToken after getMe failed', e);
+      }
     } catch {
       setUser(null);
     }
@@ -45,7 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(async (response) => {
         if (!mounted) return;
         setUser(response.data);
-        await authService.getCsrfToken();
+        try {
+          await authService.getCsrfToken();
+        } catch (e) {
+          console.error('[Auth] getCsrfToken after getMe failed', e);
+        }
       })
       .catch(() => {
         if (mounted) setUser(null);
@@ -61,10 +69,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
-      await authService.getCsrfToken();
+      try {
+        await authService.getCsrfToken();
+      } catch (e) {
+        console.error('[Auth] getCsrfToken before login failed', e);
+      }
       const response = await authService.login(credentials);
       setUser(response.data);
-      await authService.getCsrfToken();
+      try {
+        await authService.getCsrfToken();
+      } catch (e) {
+        console.error('[Auth] getCsrfToken after login failed', e);
+      }
       navigate('/dashboard');
     },
     [navigate],

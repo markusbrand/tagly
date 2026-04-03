@@ -112,7 +112,10 @@
     "no_custom_fields": "Es sind noch keine Asset-Stammdatenfelder angelegt. Ein Administrator kann sie unter Verwaltung → Benutzerdefinierte Felder definieren. Sie können das Objekt trotzdem mit der QR-ID anlegen.",
     "save": "Objekt erfassen",
     "success": "Objekt erfolgreich erfasst",
-    "saved_offline": "Offline gespeichert – wird bei Verbindung synchronisiert"
+    "saved_offline": "Offline gespeichert – wird bei Verbindung synchronisiert",
+    "error_fix_fields": "Bitte die markierten Felder korrigieren.",
+    "error_network": "Server nicht erreichbar. Verbindung oder Reverse Proxy / Cloudflare Tunnel prüfen.",
+    "error_csrf": "Sicherheitsprüfung fehlgeschlagen (CSRF). Auf dem Server DJANGO_BEHIND_HTTPS_PROXY=1 setzen und die HTTPS-Adresse der Seite in CSRF_TRUSTED_ORIGINS eintragen (siehe .env.example)."
   },
   "auth": {
     "username": "Benutzername",

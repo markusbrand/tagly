@@ -112,7 +112,10 @@
     "no_custom_fields": "No asset master-data fields are defined yet. An administrator can add them under Administration → Custom Fields. You can still register the asset using the QR ID.",
     "save": "Register Asset",
     "success": "Asset registered successfully",
-    "saved_offline": "Saved offline - will sync when connected"
+    "saved_offline": "Saved offline - will sync when connected",
+    "error_fix_fields": "Please correct the highlighted fields.",
+    "error_network": "Could not reach the server. Check your connection or reverse proxy / Cloudflare Tunnel.",
+    "error_csrf": "Security check failed (CSRF). On the server set DJANGO_BEHIND_HTTPS_PROXY=1 and add your HTTPS site URL to CSRF_TRUSTED_ORIGINS (see .env.example)."
   },
   "auth": {
     "username": "Username",
