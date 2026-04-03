@@ -1,0 +1,28 @@
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+
+const python = process.env.PYTHON ?? 'python';
+
+/**
+ * Run Django management command against the same backend tree as Playwright’s webServer.
+ * Ownership: R2-D2 (wiring) + Luke (domain commands).
+ */
+export function runDjangoManage(args: string[]): string {
+  const backendRoot = path.resolve(process.cwd(), '..', 'backend');
+  try {
+    return execFileSync(python, ['manage.py', ...args], {
+      cwd: backendRoot,
+      encoding: 'utf-8',
+      env: {
+        ...process.env,
+        ALLOWED_HOSTS: process.env.ALLOWED_HOSTS ?? '*',
+      },
+    });
+  } catch (e) {
+    const err = e as { stderr?: Buffer; stdout?: Buffer; message?: string };
+    const msg = [err.stderr?.toString(), err.stdout?.toString(), err.message]
+      .filter(Boolean)
+      .join('\n');
+    throw new Error(`manage.py ${args.join(' ')} failed:\n${msg}`);
+  }
+}

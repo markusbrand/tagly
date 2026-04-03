@@ -139,3 +139,4 @@ Use these as **manual exploratory** or **automated** cases (Playwright + API). P
 
 - **CI / automation**: extend Playwright (and backend hooks as needed) until **LC-1…LC-9** are covered; use dedicated test data prefixes and **LC-9** cleanup.
 - **Orchestration on failure**: **`team/yoda.md`** § *Test results from Vader*; log runs in **`team/handoff-yoda-from-vader.md`** (template table).
+- **Playwright files**: `frontend/e2e/lc-r2d2-wiring.spec.ts`, `frontend/e2e/lc-luke-lifecycle.spec.ts`, helpers under `frontend/e2e/helpers/` (see `team/yoda.md` § *Playwright LC implementation*).

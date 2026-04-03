@@ -39,6 +39,12 @@ Keine neuen Blocker im letzten Review; Restrisiken (Rate-Limit Login, explizite 
 
 Normative Schritte (Login → Custom Fields Asset+Customer → QR-PDF → Multi-Onboarding FE/BE → Borrow beide Pfade → Return → Overdue-Mail → Cleanup): **`team/vader.md`** § *Full lifecycle E2E scenario*. **Yoda** verteilt Failures sofort an **Luke / Leia / R2-D2** (siehe `team/yoda.md` § *Test results from Vader*).
 
+**Playwright (implementiert)**:
+
+- `frontend/e2e/lc-r2d2-wiring.spec.ts` — LC-1 + API-Definitions `page_size`
+- `frontend/e2e/lc-luke-lifecycle.spec.ts` — LC-2…LC-9 (serial, DB-mutierend)
+- `python manage.py run_overdue_check` / `e2e_cleanup_lc` — siehe `team/yoda.md` § *Playwright LC implementation*
+
 | LC-ID | Kurz | Typische Owner bei Fail |
 |-------|------|-------------------------|
 | LC-1 | Login / Session / CSRF | Luke + ggf. R2-D2 (Env/Tunnel) |

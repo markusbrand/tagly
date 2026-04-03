@@ -15,6 +15,8 @@ const frontendOrigin = `http://127.0.0.1:${frontendPort}`;
 /** Sandbox Django from repo `.env` (often production-only ALLOWED_HOSTS) so Vite + Playwright origins work. */
 const backendWebEnv = {
   ...process.env,
+  /** Overdue E2E (LC-8): real SMTP must not run in CI / local Playwright. */
+  EMAIL_BACKEND: process.env.EMAIL_BACKEND ?? 'django.core.mail.backends.locmem.EmailBackend',
   ALLOWED_HOSTS: '*',
   CORS_ALLOWED_ORIGINS: [
     frontendOrigin,
@@ -37,10 +39,11 @@ const backendWebEnv = {
  */
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  /** LC lifecycle mutates shared DB; single worker avoids races with other specs. */
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: frontendOrigin,

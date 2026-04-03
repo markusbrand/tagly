@@ -18,11 +18,12 @@ class Command(BaseCommand):
             username=username,
             defaults={
                 "email": f"{username}@e2e.local",
-                "role": User.Role.USER,
+                "role": User.Role.ADMIN,
             },
         )
         user.email = user.email or f"{username}@e2e.local"
-        user.role = User.Role.USER
+        # Admin role required for LC E2E: custom fields admin, QR PDF, notification log API.
+        user.role = User.Role.ADMIN
         user.is_active = True
         user.set_password(password)
         user.save()

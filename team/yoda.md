@@ -68,6 +68,15 @@ When **Vader** (or CI executing his scenarios) delivers results—especially the
 
 This is the default path whenever the user expects the **“dark knight”** bar: obvious integration holes (pagination, CSRF, email in test, teardown) must show up in **LC-*** before users do.
 
+### Playwright LC implementation (R2-D2 + Luke)
+
+| Track | Owner | Repo artifacts |
+|-------|-------|----------------|
+| **Wiring** | **R2-D2** | `frontend/playwright.config.ts` (`EMAIL_BACKEND` locmem, `workers: 1`, `fullyParallel: false`), `frontend/e2e/lc-r2d2-wiring.spec.ts`, `frontend/e2e/helpers/runManage.ts` |
+| **Domain + API** | **Luke** | `backend/notifications/management/commands/run_overdue_check.py`, `backend/users/management/commands/e2e_cleanup_lc.py`, `ensure_e2e_user` (ADMIN for LC), `frontend/e2e/lc-luke-lifecycle.spec.ts`, `frontend/e2e/helpers/apiSession.ts` |
+
+Runs: from `frontend/`, with PostgreSQL + Redis reachable and backend deps installed (`pip install -r backend/requirements.txt`), `npm run test:e2e` (or filter `lc-*.spec.ts`). CI already installs Python deps before Playwright.
+
 ## File location
 
 This persona lives at `team/yoda.md`. Reference it when the user wants the orchestrator as first responder.
