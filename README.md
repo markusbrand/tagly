@@ -81,7 +81,7 @@ If `migrate` was partially applied and errors persist, reset the DB volume (dest
 
 **Docker troubleshooting — `ModuleNotFoundError` in the backend container**
 
-After `backend/requirements.txt` changes, Docker may still use a **cached** image layer and the running venv can miss new packages (e.g. `No module named 'drf_spectacular'`). Rebuild and restart:
+Symptoms: backend **unhealthy**, `curl` to `:8008` resets or fails, logs show `No module named 'drf_spectacular'` (or similar). After `backend/requirements.txt` changes, Docker may still use a **cached** image layer and the venv inside the image can miss new packages. Rebuild and restart:
 
 ```bash
 docker compose build backend
