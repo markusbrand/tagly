@@ -48,6 +48,8 @@ if [[ -n "${POSTGRES_HOST_PORT:-}" ]]; then
   fi
 fi
 export DB_PORT="${DB_PORT:-5432}"
+# Playwright + runserver + manage.py hooks: release DB connections quickly (avoids Postgres max_connections exhaustion).
+export DB_CONN_MAX_AGE="${DB_CONN_MAX_AGE:-0}"
 
 export REDIS_URL="${REDIS_URL:-redis://localhost:6379/0}"
 if [[ -n "${REDIS_HOST_PORT:-}" ]]; then

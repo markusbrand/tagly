@@ -55,6 +55,10 @@ const STATUS_COLORS: Record<string, 'success' | 'warning' | 'default'> = {
   DELETED: 'default',
 };
 
+function customerAutocompleteLabel(c: Customer): string {
+  return `${c.first_name} ${c.last_name} (${c.email || c.phone})`;
+}
+
 export default function AssetBorrow() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
@@ -116,22 +120,32 @@ export default function AssetBorrow() {
   );
 
   useEffect(() => {
-    const timeout = setTimeout(() => searchCustomers(customerSearchQuery), 300);
+    const timeout = setTimeout(() => {
+      // After selection, MUI sets the input to getOptionLabel(); that string does not match backend search
+      // (e.g. "First Last (email@x)"), which would clear options and break the controlled Autocomplete state.
+      if (
+        selectedCustomer &&
+        customerSearchQuery === customerAutocompleteLabel(selectedCustomer)
+      ) {
+        return;
+      }
+      void searchCustomers(customerSearchQuery);
+    }, 300);
     return () => clearTimeout(timeout);
-  }, [customerSearchQuery, searchCustomers]);
+  }, [customerSearchQuery, searchCustomers, selectedCustomer]);
 
   const handleCustomerSelect = (_: unknown, value: Customer | null) => {
     setSelectedCustomer(value);
     if (value) {
       setForm({
-        first_name: value.first_name,
-        last_name: value.last_name,
-        address: value.address,
-        postal_code: value.postal_code,
-        city: value.city,
-        country: value.country,
-        phone: value.phone,
-        email: value.email,
+        first_name: value.first_name ?? '',
+        last_name: value.last_name ?? '',
+        address: value.address ?? '',
+        postal_code: value.postal_code ?? '',
+        city: value.city ?? '',
+        country: value.country ?? '',
+        phone: value.phone ?? '',
+        email: value.email ?? '',
       });
     } else {
       setForm(emptyForm);
@@ -270,7 +284,7 @@ export default function AssetBorrow() {
           <Box component="form" onSubmit={handleSubmit}>
             <Autocomplete
               options={customerOptions}
-              getOptionLabel={(o) => `${o.first_name} ${o.last_name} (${o.email || o.phone})`}
+              getOptionLabel={customerAutocompleteLabel}
               loading={customerSearchLoading}
               value={selectedCustomer}
               onChange={handleCustomerSelect}

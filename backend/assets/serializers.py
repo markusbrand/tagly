@@ -4,7 +4,10 @@ from rest_framework import serializers
 
 from borrowing.models import BorrowRecord
 from custom_fields.models import CustomFieldDefinition, CustomFieldValue
-from custom_fields.validators import validate_asset_custom_fields_for_asset_create
+from custom_fields.validators import (
+    is_custom_field_value_empty,
+    validate_asset_custom_fields_for_asset_create,
+)
 
 from .models import Asset
 
@@ -74,13 +77,19 @@ class AssetDetailSerializer(serializers.ModelSerializer):
 
 
 class AssetCreateSerializer(serializers.ModelSerializer):
-    custom_fields = serializers.DictField(child=serializers.JSONField(), required=False, write_only=True)
+    custom_fields = serializers.DictField(
+        child=serializers.JSONField(allow_null=True),
+        required=False,
+        write_only=True,
+    )
     guid = serializers.UUIDField(required=False)
 
     class Meta:
         model = Asset
         fields = ["id", "guid", "name", "custom_fields"]
         read_only_fields = ["id"]
+        # `validate()` derives `name` from `guid` for QR onboarding; field-level "required" must not run first.
+        extra_kwargs = {"name": {"required": False, "allow_blank": True}}
 
     def validate_guid(self, value):
         if value is None:
@@ -128,18 +137,24 @@ class AssetCreateSerializer(serializers.ModelSerializer):
                     pk=int(field_id_str),
                     entity_type=CustomFieldDefinition.EntityType.ASSET,
                 )
-                CustomFieldValue.objects.create(
-                    field_definition=field_def,
-                    content_type=ct,
-                    object_id=asset.pk,
-                    value=value,
-                )
             except (CustomFieldDefinition.DoesNotExist, ValueError):
                 continue
+            if is_custom_field_value_empty(value, field_def.field_type):
+                continue
+            CustomFieldValue.objects.create(
+                field_definition=field_def,
+                content_type=ct,
+                object_id=asset.pk,
+                value=value,
+            )
 
 
 class AssetUpdateSerializer(serializers.ModelSerializer):
-    custom_fields = serializers.DictField(child=serializers.JSONField(), required=False, write_only=True)
+    custom_fields = serializers.DictField(
+        child=serializers.JSONField(allow_null=True),
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = Asset
@@ -164,11 +179,18 @@ class AssetUpdateSerializer(serializers.ModelSerializer):
                     pk=int(field_id_str),
                     entity_type=CustomFieldDefinition.EntityType.ASSET,
                 )
-                CustomFieldValue.objects.update_or_create(
+            except (CustomFieldDefinition.DoesNotExist, ValueError):
+                continue
+            if is_custom_field_value_empty(value, field_def.field_type):
+                CustomFieldValue.objects.filter(
                     field_definition=field_def,
                     content_type=ct,
                     object_id=asset.pk,
-                    defaults={"value": value},
-                )
-            except (CustomFieldDefinition.DoesNotExist, ValueError):
+                ).delete()
                 continue
+            CustomFieldValue.objects.update_or_create(
+                field_definition=field_def,
+                content_type=ct,
+                object_id=asset.pk,
+                defaults={"value": value},
+            )

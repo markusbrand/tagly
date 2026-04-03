@@ -30,6 +30,11 @@ def _is_empty_value(value, field_type: str) -> bool:
     return False
 
 
+def is_custom_field_value_empty(value, field_type: str) -> bool:
+    """True if the payload value means “no value” (matches strict create/update validation)."""
+    return _is_empty_value(value, field_type)
+
+
 def _coerce_rules(rules: dict) -> dict:
     """
     Normalize validation_rules from JSON.

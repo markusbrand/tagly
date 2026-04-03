@@ -3,7 +3,7 @@
  * Persona: Luke (API + domain rules); uses R2-D2 helpers for manage.py hooks.
  */
 import { randomUUID } from 'node:crypto';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { apiGetJson, apiPatchJson, apiPostJson, apiPutJson } from './helpers/apiSession';
 import { e2eCredentials } from './env';
 import { runDjangoManage } from './helpers/runManage';
@@ -11,6 +11,11 @@ import { runDjangoManage } from './helpers/runManage';
 test.describe.configure({ mode: 'serial' });
 
 const PREFIX = 'lc-e2e-';
+
+/** MUI marks required fields with a trailing asterisk in the accessible name; `exact: true` then fails. */
+function customFieldInput(page: Page, suffix: string) {
+  return page.getByLabel(new RegExp(`^${PREFIX}${suffix}`));
+}
 
 interface DefRow {
   field_id: number;
@@ -223,22 +228,22 @@ test.describe('LC domain lifecycle (Luke)', () => {
       await page.goto(`/scanner/onboard/${encodeURIComponent(guid)}`);
       await expect(page.getByRole('heading', { name: /Register New Asset/i })).toBeVisible();
 
-      await page.getByLabel(`${PREFIX}astr`, { exact: true }).fill(label === 'uno' ? 'Hello' : 'World');
+      await customFieldInput(page, 'astr').fill(label === 'uno' ? 'Hello' : 'World');
       const dateInput = page.locator(`input[type="date"]`).first();
       if (label === 'uno') {
         await dateInput.fill('2026-06-15');
       }
-      await page.getByLabel(`${PREFIX}anum`, { exact: true }).fill(label === 'uno' ? '5' : '7');
-      const dec = page.getByLabel(`${PREFIX}adec`, { exact: true });
+      await customFieldInput(page, 'anum').fill(label === 'uno' ? '5' : '7');
+      const dec = customFieldInput(page, 'adec');
       if (label === 'uno') {
         await dec.fill('1.25');
       } else {
         await dec.clear();
       }
-      await page.getByLabel(`${PREFIX}ass`, { exact: true }).click();
+      await customFieldInput(page, 'ass').click();
       await page.getByRole('option', { name: label === 'uno' ? 'Alpha' : 'Beta' }).click();
 
-      const multiCombo = page.getByRole('combobox', { name: new RegExp(PREFIX + 'ams', 'i') });
+      const multiCombo = page.getByRole('combobox', { name: new RegExp(`^${PREFIX}ams`) });
       await multiCombo.click();
       if (label === 'uno') {
         await page.getByRole('option', { name: 'X' }).click();
@@ -247,10 +252,11 @@ test.describe('LC domain lifecycle (Luke)', () => {
       }
       await page.keyboard.press('Escape');
 
-      await page.getByRole('button', { name: /Register Asset/i }).click();
-      await expect(page.getByRole('button', { name: /^Edit$/i })).toBeVisible({ timeout: 60_000 });
+      await page.getByRole('button', { name: /Register Asset|Objekt erfassen/i }).click();
+      const detailOrEdit = page.getByRole('button', { name: /^(Edit|Bearbeiten)$/i });
+      await expect(detailOrEdit).toBeVisible({ timeout: 60_000 });
 
-      await page.getByRole('button', { name: /^Edit$/i }).click();
+      await detailOrEdit.click();
       await page.waitForURL(/\/assets\/\d+/);
       const m = page.url().match(/\/assets\/(\d+)/);
       expect(m).toBeTruthy();
@@ -306,34 +312,41 @@ test.describe('LC domain lifecycle (Luke)', () => {
 
     // LC-6 — borrow asset 1: new customer (UI)
     await page.goto(`/scanner/borrow/${assetId1}`);
-    await expect(page.getByRole('heading', { name: /Lend Asset/i })).toBeVisible();
-    await page.getByLabel('First Name').fill('New');
-    await page.getByLabel('Last Name').fill('Borrower');
-    await page.getByLabel('Address').fill('Lane 2');
-    await page.getByLabel('Postal Code').fill('1020');
-    await page.getByLabel('City').fill('Graz');
-    await page.getByLabel('Country').click();
+    // Borrow screen renders two headings with the same title (card + form); strict mode needs one match.
+    await expect(page.getByRole('heading', { name: /Lend Asset|Objekt ausleihen/i }).first()).toBeVisible();
+    await page.getByLabel(/First Name|Vorname/i).fill('New');
+    await page.getByLabel(/Last Name|Nachname/i).fill('Borrower');
+    await page.getByLabel(/Address|Adresse/i).fill('Lane 2');
+    await page.getByLabel(/Postal Code|Postleitzahl/i).fill('1020');
+    await page.getByLabel(/City|Stadt/i).fill('Graz');
+    await page.getByLabel(/Country|Land/i).click();
     await page.getByRole('option', { name: 'Austria' }).click();
-    await page.getByLabel(/^Phone Number/i).fill('+439998887766');
-    await page.getByLabel(/Email/i).fill(`newborrower${Date.now()}@lc-e2e.local`);
+    // Must pass django-phonenumber-field / phonenumbers is_valid_number (e.g. +439998887766 is invalid AT).
+    await page.getByLabel(/Phone Number|Telefonnummer/i).fill('+431234567890');
+    await page.getByLabel(/Email \(optional\)|E-Mail \(optional\)/i).fill(`newborrower${Date.now()}@lc-e2e.local`);
 
     const future = new Date();
     future.setDate(future.getDate() + 7);
     const pad = (n: number) => String(n).padStart(2, '0');
     const untilStr = `${future.getFullYear()}-${pad(future.getMonth() + 1)}-${pad(future.getDate())}T${pad(future.getHours())}:${pad(future.getMinutes())}`;
-    await page.getByLabel('Return By').fill(untilStr);
-    await page.getByRole('button', { name: /Confirm Lending/i }).click();
-    await expect(page.getByText(/Asset lent successfully/i)).toBeVisible({ timeout: 60_000 });
+    await page.getByLabel(/Return By|Rückgabe bis/i).fill(untilStr);
+    await page.getByRole('button', { name: /Confirm Lending|Ausleihe bestätigen/i }).click();
+    await expect(page.getByText(/Asset lent successfully|Objekt erfolgreich ausgeliehen/i)).toBeVisible({
+      timeout: 60_000,
+    });
 
     // LC-6 — borrow asset 2: existing customer (UI autocomplete)
     await page.goto(`/scanner/borrow/${assetId2}`);
-    await expect(page.getByRole('heading', { name: /Lend Asset/i })).toBeVisible();
-    const search = page.getByRole('combobox', { name: /Search existing customer/i });
-    await search.fill('Lc E2e');
+    await expect(page.getByRole('heading', { name: /Lend Asset|Objekt ausleihen/i }).first()).toBeVisible();
+    const search = page.getByRole('combobox', { name: /Search existing customer|Bestehenden Kunden suchen/i });
+    // Backend search matches each field separately (not "first + last"); "Lc E2e" matches neither full field.
+    await search.fill('E2e Existing');
     await page.getByRole('option', { name: /Lc E2e Existing/ }).click();
-    await page.getByLabel('Return By').fill(untilStr);
-    await page.getByRole('button', { name: /Confirm Lending/i }).click();
-    await expect(page.getByText(/Asset lent successfully/i)).toBeVisible({ timeout: 60_000 });
+    await page.getByLabel(/Return By|Rückgabe bis/i).fill(untilStr);
+    await page.getByRole('button', { name: /Confirm Lending|Ausleihe bestätigen/i }).click();
+    await expect(page.getByText(/Asset lent successfully|Objekt erfolgreich ausgeliehen/i)).toBeVisible({
+      timeout: 60_000,
+    });
 
     // Overdue borrow on a third asset (API) for LC-8
     const guid3 = randomUUID();
@@ -364,9 +377,11 @@ test.describe('LC domain lifecycle (Luke)', () => {
     expect(activeBorrow1).toBeTruthy();
 
     await page.goto(`/scanner/return/${assetId1}`);
-    await expect(page.getByRole('heading', { name: /Return Asset/i })).toBeVisible();
-    await page.getByRole('button', { name: /Confirm Return/i }).click();
-    await expect(page.getByText(/Asset returned successfully/i)).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole('heading', { name: /Return Asset|Objekt zurückgeben/i }).first()).toBeVisible();
+    await page.getByRole('button', { name: /Confirm Return|Rückgabe bestätigen/i }).click();
+    await expect(page.getByText(/Asset returned successfully|Objekt erfolgreich zurückgegeben/i)).toBeVisible({
+      timeout: 60_000,
+    });
 
     // LC-8 — overdue notification
     runDjangoManage(['run_overdue_check']);

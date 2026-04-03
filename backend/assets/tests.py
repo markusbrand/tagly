@@ -3,6 +3,8 @@ Asset API: authenticated users share one inventory namespace (no per-owner isola
 Tests below document that contract for production-readiness reviews.
 """
 
+import uuid
+
 import pytest
 
 from assets.models import Asset
@@ -61,6 +63,18 @@ class TestAssetAPI:
         assert response.status_code == 201
         assert response.data['name'] == 'Test Asset'
         assert 'guid' in response.data
+
+    def test_create_asset_guid_only_derives_display_name(self, authenticated_client, user):
+        """QR onboarding posts `guid` + `custom_fields` without `name`; validate() sets QR-xxxxxxxx."""
+        g = str(uuid.uuid4())
+        response = authenticated_client.post(
+            '/api/v1/assets/',
+            {'guid': g},
+            format='json',
+        )
+        assert response.status_code == 201
+        assert response.data['guid'] == g
+        assert response.data['name'] == f'QR-{g[:8]}'
 
     def test_get_asset_by_guid(self, authenticated_client, user):
         create_response = authenticated_client.post('/api/v1/assets/', {
@@ -144,6 +158,36 @@ class TestAssetAPI:
         response = authenticated_client.post(
             '/api/v1/assets/',
             {'name': 'OK Test', 'custom_fields': {str(field.pk): ''}},
+            format='json',
+        )
+        assert response.status_code == 201
+
+    def test_create_asset_optional_decimal_json_null_ok(self, authenticated_client, user):
+        """FE sends JSON null for cleared optional DECIMAL; DRF must accept it (allow_null + skip save)."""
+        s = CustomFieldDefinition.objects.create(
+            entity_type=CustomFieldDefinition.EntityType.ASSET,
+            name='Tag',
+            field_type=CustomFieldDefinition.FieldType.STRING,
+            is_mandatory=True,
+            options={},
+            validation_rules={'min_length': 1},
+            display_order=0,
+        )
+        d = CustomFieldDefinition.objects.create(
+            entity_type=CustomFieldDefinition.EntityType.ASSET,
+            name='Weight',
+            field_type=CustomFieldDefinition.FieldType.DECIMAL,
+            is_mandatory=False,
+            options={},
+            validation_rules={},
+            display_order=1,
+        )
+        response = authenticated_client.post(
+            '/api/v1/assets/',
+            {
+                'name': 'Null dec test',
+                'custom_fields': {str(s.pk): 'x', str(d.pk): None},
+            },
             format='json',
         )
         assert response.status_code == 201

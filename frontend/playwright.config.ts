@@ -20,6 +20,8 @@ const frontendOrigin = `http://127.0.0.1:${frontendPort}`;
 /** Sandbox Django from repo `.env` (often production-only ALLOWED_HOSTS) so Vite + Playwright origins work. */
 const backendWebEnv = {
   ...process.env,
+  /** Avoid holding Postgres connections (CONN_MAX_AGE=600 + many requests) — prevents “too many clients” on small local DBs. */
+  DB_CONN_MAX_AGE: process.env.DB_CONN_MAX_AGE ?? '0',
   /** Overdue E2E (LC-8): real SMTP must not run in CI / local Playwright. */
   EMAIL_BACKEND: process.env.EMAIL_BACKEND ?? 'django.core.mail.backends.locmem.EmailBackend',
   ALLOWED_HOSTS: '*',

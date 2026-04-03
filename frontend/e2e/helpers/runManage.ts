@@ -18,6 +18,7 @@ export function runDjangoManage(args: string[]): string {
       env: {
         ...process.env,
         ALLOWED_HOSTS: process.env.ALLOWED_HOSTS ?? '*',
+        DB_CONN_MAX_AGE: process.env.DB_CONN_MAX_AGE ?? '0',
       },
     });
   } catch (e) {

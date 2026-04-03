@@ -138,6 +138,7 @@ jobs:
       DB_PASSWORD: tagly_e2e
       DB_HOST: localhost
       DB_PORT: "5432"
+      DB_CONN_MAX_AGE: "0"
       REDIS_URL: redis://localhost:6379/0
       DJANGO_SECRET_KEY: ci-e2e-secret-key
       DJANGO_DEBUG: "0"

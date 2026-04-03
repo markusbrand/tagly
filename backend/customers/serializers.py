@@ -55,7 +55,7 @@ class CustomerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = [
-            "id", "first_name", "last_name",
+            "id", "first_name", "last_name", "address", "postal_code",
             "city", "country", "email", "phone",
         ]
         read_only_fields = fields
