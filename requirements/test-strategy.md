@@ -132,3 +132,10 @@ Use these as **manual exploratory** or **automated** cases (Playwright + API). P
 
 - **OB-01–OB-07** map to `validate_asset_custom_fields_for_asset_create` (backend) and `validateAssetCustomFieldValuesForCreate` + `buildCustomFieldsPayload` (`frontend/src/utils/assetCustomFieldPayload.ts`).
 - **SC-01–SC-04** map to `QRScannerService.listCameras`, sort order, `Scanner` page controls.
+
+### 6.4 Full lifecycle E2E (LC-1 … LC-9) — Vader master scenario
+
+**Normative scenario** (login → all asset + customer custom field types with validation → QR PDF → multi-asset onboarding with **frontend/backend value parity** → borrow with **new** and **existing** customer → partial return → **overdue test email** → **teardown**): documented in **`team/vader.md`** § *Full lifecycle E2E scenario*.
+
+- **CI / automation**: extend Playwright (and backend hooks as needed) until **LC-1…LC-9** are covered; use dedicated test data prefixes and **LC-9** cleanup.
+- **Orchestration on failure**: **`team/yoda.md`** § *Test results from Vader*; log runs in **`team/handoff-yoda-from-vader.md`** (template table).

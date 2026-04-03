@@ -33,7 +33,33 @@ Keine neuen Blocker im letzten Review; Restrisiken (Rate-Limit Login, explizite 
 | `frontend/e2e/*.spec.ts` | Login + geschützte Route |
 | `scripts/e2e-local.sh` | Lokaler Lauf mit `backend/.venv`, sicherem `.env`-Load, Port-Mapping für Docker-DB/Redis |
 
-**Breitere Szenarien** (Onboarding, Scanner, Admin): weiterhin iterativ; siehe `requirements/test-strategy.md`.
+**Breitere Szenarien** (Onboarding, Scanner, Admin): iterativ; siehe `requirements/test-strategy.md`.
+
+### Full-Lifecycle-Regression (LC-1 … LC-9)
+
+Normative Schritte (Login → Custom Fields Asset+Customer → QR-PDF → Multi-Onboarding FE/BE → Borrow beide Pfade → Return → Overdue-Mail → Cleanup): **`team/vader.md`** § *Full lifecycle E2E scenario*. **Yoda** verteilt Failures sofort an **Luke / Leia / R2-D2** (siehe `team/yoda.md` § *Test results from Vader*).
+
+| LC-ID | Kurz | Typische Owner bei Fail |
+|-------|------|-------------------------|
+| LC-1 | Login / Session / CSRF | Luke + ggf. R2-D2 (Env/Tunnel) |
+| LC-2, LC-3 | Custom Fields Admin + API | Luke (API), Leia (UI) |
+| LC-4 | QR-PDF | Luke |
+| LC-5 | Multi-Onboarding, FE≡BE | Luke + Leia |
+| LC-6, LC-7 | Borrow/Return | Luke + Leia |
+| LC-8 | Overdue + Test-E-Mail | Luke (+ R2-D2 Worker/CI) |
+| LC-9 | Teardown / Initialzustand | Luke + Leia + R2-D2 (DB/CI) |
+
+**Template (pro Lauf):**
+
+```text
+Datum:
+LC-ID(s) failed:
+Umgebung (CI / lokal / Pi):
+Artifact (Link / Pfad):
+Kurzursache (Vader):
+Assignee:
+PR/Issue:
+```
 
 ---
 
