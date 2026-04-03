@@ -79,6 +79,24 @@ docker compose exec backend python manage.py createsuperuser
 If `migrate` was partially applied and errors persist, reset the DB volume (destroys local data):  
 `docker compose down -v && docker compose up -d`, then migrate again.
 
+**Docker troubleshooting — `ModuleNotFoundError` in the backend container**
+
+After `backend/requirements.txt` changes, Docker may still use a **cached** image layer and the running venv can miss new packages (e.g. `No module named 'drf_spectacular'`). Rebuild and restart:
+
+```bash
+docker compose build backend
+docker compose up -d
+```
+
+If the error persists, force a full dependency install (no layer cache):
+
+```bash
+docker compose build --no-cache backend
+docker compose up -d
+```
+
+Celery services use the same image; recreating them picks up the new image automatically on `up -d`.
+
 ---
 
 ## Installation — backend (without Docker)
@@ -157,9 +175,14 @@ All settings are driven by environment variables. See **`.env.example`** for the
 | `DJANGO_SECRET_KEY` | Required in production |
 | `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` | Host and browser security |
 | `VITE_API_URL` | Frontend → API base URL (must be reachable from the **browser**) |
+| `VITE_DEV_PUBLIC_HOST` | (Dev only) Public UI hostname for Vite HMR WebSocket behind HTTPS tunnel |
 | `EMAIL_*` | SMTP for notifications |
 
 **HTTPS / Cloudflare:** If users open the UI at `https://…`, set `VITE_API_URL` to the **public** API URL (not a private LAN IP). Set `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` to include the UI origin, and recreate the backend container after changes.
+
+**Vite dev through Cloudflare Tunnel (HMR):** If the browser shows `[vite] failed to connect to websocket`, set (in the environment that starts Vite) `VITE_DEV_PUBLIC_HOST` to your **public UI hostname** (no scheme), e.g. `tagly.brandstaetter.rocks`. Optional: `VITE_DEV_HMR_CLIENT_PORT` (default `443`), `VITE_DEV_HMR_PROTOCOL` (`wss` default, or `ws` if you terminate TLS only at the edge and the tunnel speaks HTTP to Vite — rare).
+
+**Service worker / “503 Offline” on login:** The PWA service worker only wraps **same-origin** requests. If the UI and API use **different hostnames** (split tunnel), cross-origin API calls are no longer intercepted, so a failed `fetch` is not replaced by a fake `{ "error": "Offline" }` response. In **`npm run dev`**, service worker registration is **disabled** and existing registrations are **unregistered** on load so local tunnel dev is not broken by a stale worker. After upgrading, do a **hard refresh** or clear site data once if an old worker still controls the tab.
 
 **Gmail SMTP:** Enable 2-Step Verification, create an [App Password](https://myaccount.google.com/apppasswords), and set `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL` in `.env`.
 

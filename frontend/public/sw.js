@@ -24,6 +24,16 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Only handle same-origin HTTP(S). Cross-origin API calls (e.g. UI on tagly… and API on
+  // tagly-backend…) must not be wrapped: fetch often fails opaque (CORS) and we would
+  // incorrectly return 503 { error: "Offline" } and break login.
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request));
   } else {
