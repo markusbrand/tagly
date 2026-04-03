@@ -264,8 +264,6 @@ export default function Scanner() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            // Do not mirror the preview: iOS rear camera is already world-oriented;
-            // scaleX(-1) made panning feel inverted (move phone right → image goes left).
           }}
         />
 
