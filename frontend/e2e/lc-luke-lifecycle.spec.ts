@@ -179,9 +179,26 @@ test.describe('LC domain lifecycle (Luke)', () => {
       customerDefIds.push(created.id);
     }
 
-    // LC-4 — QR PDF (UI)
+    // LC-4 — QR PDF (UI). Fresh DBs have no sticker templates; the Generate button stays disabled
+    // until a template exists and one is selected (auto-selected when is_default is true).
+    await apiPostJson(page, '/qr/templates/', {
+      name: `${PREFIX}qr-template`,
+      label_width_mm: 80,
+      label_height_mm: 45,
+      h_pitch_mm: 90,
+      v_pitch_mm: 50,
+      left_margin_mm: 15,
+      top_margin_mm: 15,
+      rows: 2,
+      columns: 2,
+      offset_x_mm: 0,
+      offset_y_mm: 0,
+      is_default: true,
+    });
+
     await page.goto('/qr-generate');
     await expect(page.getByRole('heading', { name: /Generate QR Stickers/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Generate PDF/i })).toBeEnabled({ timeout: 15_000 });
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: /Generate PDF/i }).click();
     const download = await downloadPromise;

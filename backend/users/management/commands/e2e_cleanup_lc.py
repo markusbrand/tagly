@@ -8,6 +8,8 @@ from assets.models import Asset
 from borrowing.models import BorrowRecord
 from custom_fields.models import CustomFieldDefinition, CustomFieldValue
 from customers.models import Customer
+from qr_generation.models import StickerTemplate
+
 PREFIX = "lc-e2e-"
 EMAIL_SUFFIX = "@lc-e2e.local"
 
@@ -36,8 +38,11 @@ class Command(BaseCommand):
 
             n_defs = CustomFieldDefinition.objects.filter(name__startswith=PREFIX).delete()[0]
 
+            n_tpl = StickerTemplate.objects.filter(name__startswith=PREFIX).delete()[0]
+
         self.stdout.write(
             self.style.SUCCESS(
-                f"e2e_cleanup_lc: borrows={n_br} assets={n_assets} customers={n_cust} field_defs={n_defs}",
+                f"e2e_cleanup_lc: borrows={n_br} assets={n_assets} customers={n_cust} "
+                f"field_defs={n_defs} sticker_templates={n_tpl}",
             ),
         )
