@@ -57,6 +57,12 @@ services:
     volumes:
       - ./backend:/app
     command: python manage.py runserver 0.0.0.0:8008
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8008/api/v1/health/ -o /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
   celery_worker:
     build: ./backend
@@ -103,7 +109,7 @@ services:
     working_dir: /app
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "5173:5173"
     environment:
