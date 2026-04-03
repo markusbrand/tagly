@@ -93,6 +93,11 @@
 | Security scanning | pip audit, npm audit, ruff (security rules) |
 | CI integration | GitHub Actions (see ci.yml) |
 
+### E2E — how to run
+
+- **CI**: Job `E2E – Playwright` (`.github/workflows/ci.yml`) installs Chromium, starts Django + Vite via `frontend/playwright.config.ts`, runs `npm run test:e2e`.
+- **Local**: PostgreSQL + Redis must be reachable (e.g. `docker compose up -d db redis`). If Postgres is not on `localhost:5432`, set `DB_PORT`. Playwright uses ports **18008** / **15173** by default (not **8008** / **5173**) so a running full stack on the default ports is not accidentally reused. User seed: `python manage.py ensure_e2e_user` (or rely on Playwright’s backend startup). Scripts: `npm run test:e2e`, `npm run test:e2e:ui`.
+
 ---
 
 ## 6. Executable scenarios — Scanner, onboarding & Stammdaten (Vader / text-to-test)

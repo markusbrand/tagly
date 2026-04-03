@@ -1,4 +1,19 @@
 import pytest
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+
+User = get_user_model()
+
+
+@pytest.mark.django_db
+class TestEnsureE2EUserCommand:
+    def test_idempotent_creates_single_user(self):
+        call_command('ensure_e2e_user')
+        call_command('ensure_e2e_user')
+        assert User.objects.filter(username='e2e_user').count() == 1
+        user = User.objects.get(username='e2e_user')
+        assert user.check_password('TaglyE2E_Local_Only_1')
+        assert user.role == User.Role.USER
 
 
 @pytest.mark.django_db
