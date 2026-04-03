@@ -70,13 +70,23 @@ export function resolveInitialCameraIndex(sortedCameras: CameraDevice[]): number
 export class QRScannerService {
   private scanner: Html5Qrcode | null = null;
 
+  /** Lists video inputs via enumerateDevices only (no getUserMedia — avoids duplicate iOS prompts). */
   static async listCameras(): Promise<CameraDevice[]> {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      console.warn('[Scanner] enumerateDevices not available');
+      return [];
+    }
     try {
-      const devices = await Html5Qrcode.getCameras();
-      return devices.map((d) => ({
-        id: d.id,
-        label: (d.label && d.label.trim()) || d.id,
-      }));
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs: CameraDevice[] = [];
+      for (const d of devices) {
+        if (d.kind !== 'videoinput' || !d.deviceId) continue;
+        videoInputs.push({
+          id: d.deviceId,
+          label: (d.label && d.label.trim()) || d.deviceId,
+        });
+      }
+      return videoInputs;
     } catch (e) {
       console.warn('[Scanner] Enumerating cameras failed', e);
       return [];

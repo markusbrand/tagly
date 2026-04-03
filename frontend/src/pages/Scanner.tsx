@@ -132,6 +132,15 @@ export default function Scanner() {
         onSuccess: handleScanSuccess,
       });
       setMode('scanning');
+      const raw = await QRScannerService.listCameras();
+      const sorted = sortCamerasForQrScan(raw);
+      setOrderedCameras(sorted);
+      if (cameraId) {
+        const idx = sorted.findIndex((c) => c.id === cameraId);
+        setCameraIndex(idx >= 0 ? idx : resolveInitialCameraIndex(sorted));
+      } else {
+        setCameraIndex(resolveInitialCameraIndex(sorted));
+      }
     },
     [handleScanSuccess, stopScanner],
   );
