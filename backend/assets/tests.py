@@ -1,7 +1,47 @@
+"""
+Asset API: authenticated users share one inventory namespace (no per-owner isolation).
+Tests below document that contract for production-readiness reviews.
+"""
+
 import pytest
 
 from assets.models import Asset
 from custom_fields.models import CustomFieldDefinition
+
+
+@pytest.mark.django_db
+class TestAssetSharedInventoryContract:
+    def test_peer_can_get_asset_by_pk(self, authenticated_client, client_as_user_two, user, user_two):
+        create = authenticated_client.post("/api/v1/assets/", {"name": "Peer PK Asset"})
+        assert create.status_code == 201
+        aid = create.data["id"]
+        r = client_as_user_two.get(f"/api/v1/assets/{aid}/")
+        assert r.status_code == 200
+        assert r.data["name"] == "Peer PK Asset"
+
+    def test_peer_can_get_asset_by_guid(self, authenticated_client, client_as_user_two, user, user_two):
+        create = authenticated_client.post("/api/v1/assets/", {"name": "Peer GUID Asset"})
+        guid = create.data["guid"]
+        r = client_as_user_two.get(f"/api/v1/assets/guid/{guid}/")
+        assert r.status_code == 200
+        assert r.data["name"] == "Peer GUID Asset"
+
+    def test_peer_can_patch_asset_created_by_other(
+        self, authenticated_client, client_as_user_two, user, user_two
+    ):
+        create = authenticated_client.post("/api/v1/assets/", {"name": "Before"})
+        aid = create.data["id"]
+        r = client_as_user_two.patch(f"/api/v1/assets/{aid}/", {"name": "After"}, format="json")
+        assert r.status_code == 200
+        assert r.data["name"] == "After"
+        assert Asset.objects.get(pk=aid).name == "After"
+
+    def test_peer_sees_others_asset_in_list(self, authenticated_client, client_as_user_two, user, user_two):
+        authenticated_client.post("/api/v1/assets/", {"name": "List Me"})
+        r = client_as_user_two.get("/api/v1/assets/")
+        assert r.status_code == 200
+        names = {row["name"] for row in r.data["results"]}
+        assert "List Me" in names
 
 
 @pytest.mark.django_db

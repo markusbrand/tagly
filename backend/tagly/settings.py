@@ -151,6 +151,10 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
+    # Per-scope rates for ScopedRateThrottle (see users.views.LoginView).
+    "DEFAULT_THROTTLE_RATES": {
+        "login": os.environ.get("LOGIN_THROTTLE_RATE", "30/minute").strip() or "30/minute",
+    },
 }
 
 SPECTACULAR_SETTINGS = {

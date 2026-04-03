@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .permissions import IsAdmin, IsAuthenticated
+from .throttling import LoginIPThrottle
 from .serializers import (
     LoginSerializer,
     UserAdminUpdateSerializer,
@@ -26,14 +27,21 @@ LoginErrorResponse = inline_serializer(
 )
 
 
+ThrottledResponse = inline_serializer(
+    name="LoginThrottledResponse",
+    fields={"detail": serializers.CharField()},
+)
+
+
 @extend_schema(
     tags=["users"],
     request=LoginSerializer,
-    responses={200: UserSerializer, 401: LoginErrorResponse},
+    responses={200: UserSerializer, 401: LoginErrorResponse, 429: ThrottledResponse},
 )
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [LoginIPThrottle]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
