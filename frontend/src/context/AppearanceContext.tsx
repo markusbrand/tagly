@@ -23,7 +23,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       inner.color = user.appearance_font_color;
     }
 
-    const hasImage = Boolean(user?.appearance_bg_image);
+    const bgImageUrl = user?.appearance_bg_image ?? '';
+    const hasImage = bgImageUrl.length > 0;
     const transparency = Math.min(
       100,
       Math.max(0, user?.appearance_bg_image_transparency ?? 50),
@@ -39,7 +40,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         position: 'absolute',
         inset: 0,
         zIndex: 0,
-        backgroundImage: `url(${user.appearance_bg_image})`,
+        backgroundImage: `url(${bgImageUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
