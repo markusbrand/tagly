@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
   /** Relative `/api/v1` uses Vite dev proxy to Django (see vite.config.ts). Override with full URL if needed. */
@@ -7,6 +7,18 @@ const api = axios.create({
   xsrfCookieName: 'csrftoken',
   xsrfHeaderName: 'X-CSRFToken',
   headers: { 'Content-Type': 'application/json' },
+});
+
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (config.data instanceof FormData) {
+    const h = config.headers;
+    // Axios 1.x uses AxiosHeaders; bracket-delete does not clear defaults → multipart breaks → 400.
+    if (h && typeof h.delete === 'function') {
+      h.delete('Content-Type');
+      h.delete('content-type');
+    }
+  }
+  return config;
 });
 
 api.interceptors.response.use(

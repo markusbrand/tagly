@@ -9,7 +9,10 @@ from rest_framework.views import APIView
 
 from .permissions import IsAdmin, IsAuthenticated
 from .throttling import LoginIPThrottle
+from rest_framework.parsers import FormParser, MultiPartParser
+
 from .serializers import (
+    BackgroundImageUploadSerializer,
     LoginSerializer,
     UserAdminUpdateSerializer,
     UserCreateSerializer,
@@ -66,7 +69,7 @@ class LoginView(APIView):
 
         login(request, user)
         logger.info("User %s logged in successfully", user.username)
-        return Response(UserSerializer(user).data)
+        return Response(UserSerializer(user, context={"request": request}).data)
 
 
 @extend_schema(tags=["users"], request=None, responses={status.HTTP_204_NO_CONTENT: None})
@@ -94,6 +97,46 @@ class UserPreferencesView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class BackgroundImageView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @extend_schema(tags=["users"], request=BackgroundImageUploadSerializer, responses={200: UserSerializer})
+    def post(self, request):
+        if not request.FILES.get("image"):
+            logger.warning(
+                "Background image POST without file: user=%s FILES=%s content_type=%s",
+                request.user.username,
+                list(request.FILES.keys()),
+                request.content_type,
+            )
+            return Response(
+                {"image": ["No file was submitted. Use multipart field name “image”."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = BackgroundImageUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        if user.appearance_bg_image:
+            user.appearance_bg_image.delete(save=False)
+
+        user.appearance_bg_image = serializer.validated_data["image"]
+        user.save(update_fields=["appearance_bg_image"])
+        logger.info("User %s uploaded background image", user.username)
+        return Response(UserSerializer(user, context={"request": request}).data)
+
+    @extend_schema(tags=["users"], responses={204: None})
+    def delete(self, request):
+        user = request.user
+        if user.appearance_bg_image:
+            user.appearance_bg_image.delete(save=False)
+            user.appearance_bg_image = ""
+            user.save(update_fields=["appearance_bg_image"])
+            logger.info("User %s removed background image", user.username)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserListView(generics.ListCreateAPIView):

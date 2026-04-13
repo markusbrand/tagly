@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './theme/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
+import { AppearanceProvider } from './context/AppearanceContext';
 import AppShell from './components/Layout/AppShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -23,6 +24,7 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
+          <AppearanceProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
 
@@ -51,6 +53,7 @@ export default function App() {
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AppearanceProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

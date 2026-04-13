@@ -24,7 +24,9 @@
     "scanner": "Scanner",
     "qr_stickers": "QR Stickers",
     "admin": "Admin",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapse_drawer": "Collapse sidebar",
+    "expand_drawer": "Expand sidebar"
   },
   "scanner": {
     "scan_qr": "Scan QR Code",
@@ -187,5 +189,21 @@
     "button": "Export to Excel",
     "exporting": "Exporting...",
     "success": "Export completed"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "font_color": "Font color",
+    "bg_color": "Background color",
+    "bg_image": "Background image",
+    "upload": "Upload image",
+    "remove_image": "Remove image",
+    "reset": "Reset to defaults",
+    "save": "Save",
+    "saved": "Appearance saved",
+    "max_size": "Max 5 MB — JPG, PNG, WebP (phone camera JPEG/MPO is OK)",
+    "image_transparency": "Image transparency",
+    "transparency_hint": "Higher values show more of the background color through the image (0 = opaque, 100 = fully transparent).",
+    "opaque": "Opaque",
+    "fully_transparent": "Full transparency"
   }
 }

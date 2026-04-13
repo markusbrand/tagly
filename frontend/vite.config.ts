@@ -24,31 +24,35 @@ const devHmr =
  * changeOrigin: false keeps the browser Host (e.g. tagly.brandstaetter.rocks) so session cookies match.
  */
 const proxyTarget = (process.env.VITE_DEV_PROXY_TARGET ?? 'http://127.0.0.1:8008').trim()
+const proxyErrorHandler = (proxy: unknown) => {
+  ;(proxy as { on: (e: string, cb: (err: Error) => void) => void }).on(
+    'error',
+    (err: Error) => {
+      console.error(
+        '[vite] proxy error:',
+        err.message,
+        '| target:',
+        proxyTarget,
+        '| If Vite runs on the Pi host (not Docker), use VITE_DEV_PROXY_TARGET=http://127.0.0.1:8008 (not http://backend:8008).',
+      )
+    },
+  )
+}
+
+const sharedProxyOptions = {
+  target: proxyTarget,
+  changeOrigin: false,
+  secure: false,
+  xfwd: true,
+  timeout: 120_000,
+  configure: proxyErrorHandler,
+}
+
 const devProxy =
   proxyTarget.length > 0
     ? {
-        '/api': {
-          target: proxyTarget,
-          changeOrigin: false,
-          secure: false,
-          xfwd: true,
-          timeout: 120_000,
-          configure: (proxy: unknown) => {
-            // http-proxy — log upstream failures (e.g. backend down, wrong VITE_DEV_PROXY_TARGET).
-            ;(proxy as { on: (e: string, cb: (err: Error) => void) => void }).on(
-              'error',
-              (err: Error) => {
-                console.error(
-                  '[vite] /api proxy error:',
-                  err.message,
-                  '| target:',
-                  proxyTarget,
-                  '| If Vite runs on the Pi host (not Docker), use VITE_DEV_PROXY_TARGET=http://127.0.0.1:8008 (not http://backend:8008).',
-                )
-              },
-            )
-          },
-        },
+        '/api': sharedProxyOptions,
+        '/media': sharedProxyOptions,
       }
     : undefined
 

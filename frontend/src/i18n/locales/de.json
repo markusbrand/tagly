@@ -24,7 +24,9 @@
     "scanner": "Scanner",
     "qr_stickers": "QR-Etiketten",
     "admin": "Verwaltung",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "collapse_drawer": "Seitenleiste einklappen",
+    "expand_drawer": "Seitenleiste ausklappen"
   },
   "scanner": {
     "scan_qr": "QR-Code scannen",
@@ -187,5 +189,21 @@
     "button": "Als Excel exportieren",
     "exporting": "Wird exportiert...",
     "success": "Export abgeschlossen"
+  },
+  "appearance": {
+    "title": "Darstellung",
+    "font_color": "Schriftfarbe",
+    "bg_color": "Hintergrundfarbe",
+    "bg_image": "Hintergrundbild",
+    "upload": "Bild hochladen",
+    "remove_image": "Bild entfernen",
+    "reset": "Auf Standard zurücksetzen",
+    "save": "Speichern",
+    "saved": "Darstellung gespeichert",
+    "max_size": "Max. 5 MB — JPG, PNG, WebP (Smartphone-JPEG/MPO möglich)",
+    "image_transparency": "Transparenz des Bildes",
+    "transparency_hint": "Höhere Werte lassen mehr Hintergrundfarbe durchscheinen (0 = deckend, 100 = vollständig transparent).",
+    "opaque": "Deckend",
+    "fully_transparent": "Vollständig transparent"
   }
 }

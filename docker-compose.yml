@@ -58,6 +58,7 @@ services:
       LOGIN_THROTTLE_RATE: "${LOGIN_THROTTLE_RATE:-30/minute}"
     volumes:
       - ./backend:/app
+      - backend_media:/app/media
     # Apply DB schema before serving; health hits SessionMiddleware (DB-backed sessions), so without
     # migrate the check returns 5xx and frontend (depends_on: healthy) never starts — common on fresh Pi pulls.
     command: >
@@ -141,3 +142,4 @@ services:
 volumes:
   postgres_data:
   frontend_node_modules:
+  backend_media:

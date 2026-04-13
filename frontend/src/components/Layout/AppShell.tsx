@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,13 +29,20 @@ import {
   AdminPanelSettings as AdminIcon,
   QrCode2 as QrStickerIcon,
   AccountCircle,
+  Palette as PaletteIcon,
   Translate,
+  ChevronLeft,
+  ChevronRight,
 } from '@mui/icons-material';
 import { useThemeMode } from '../../theme/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAppearance } from '../../context/AppearanceContext';
+import AppearanceDialog from '../AppearanceDialog';
 import BottomNav from './BottomNav';
 
-const DRAWER_WIDTH = 260;
+const DRAWER_EXPANDED_WIDTH = 260;
+const DRAWER_COLLAPSED_WIDTH = 72;
+const NAV_DRAWER_STORAGE_KEY = 'tagly-nav-drawer-collapsed';
 
 const LANGUAGES: Record<string, string> = { en: 'English', de: 'Deutsch' };
 
@@ -47,10 +54,30 @@ export default function AppShell() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { mode, toggleMode } = useThemeMode();
   const { logout, isAdmin } = useAuth();
+  const { mainOuterSx, mainInnerSx } = useAppearance();
 
+  const [navCollapsed, setNavCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(NAV_DRAWER_STORAGE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [langAnchor, setLangAnchor] = useState<HTMLElement | null>(null);
   const [userAnchor, setUserAnchor] = useState<HTMLElement | null>(null);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NAV_DRAWER_STORAGE_KEY, navCollapsed ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }, [navCollapsed]);
+
+  const railCollapsed = !isMobile && navCollapsed;
+  const drawerWidth = railCollapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_EXPANDED_WIDTH;
 
   const navItems = [
     { label: t('nav.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
@@ -68,22 +95,68 @@ export default function AppShell() {
   };
 
   const drawerContent = (
-    <Box sx={{ width: DRAWER_WIDTH, pt: 2 }}>
-      <Typography variant="h5" sx={{ px: 2, mb: 2, fontWeight: 700 }}>
-        {t('common.app_name')}
-      </Typography>
+    <Box sx={{ width: drawerWidth, pt: 1, transition: theme.transitions.create('width') }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: railCollapsed ? 'center' : 'space-between',
+          px: railCollapsed ? 0.5 : 1,
+          mb: 1,
+          minHeight: 40,
+        }}
+      >
+        {!railCollapsed && (
+          <Typography variant="h5" sx={{ pl: 1, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {t('common.app_name')}
+          </Typography>
+        )}
+        {!isMobile && (
+          <Tooltip title={railCollapsed ? t('nav.expand_drawer') : t('nav.collapse_drawer')}>
+            <IconButton
+              size="small"
+              onClick={() => setNavCollapsed((c) => !c)}
+              aria-label={railCollapsed ? t('nav.expand_drawer') : t('nav.collapse_drawer')}
+            >
+              {railCollapsed ? <ChevronRight /> : <ChevronLeft />}
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
       <Divider />
-      <List>
+      <List sx={{ px: railCollapsed ? 0.25 : 0, pt: 1 }}>
         {navItems.map(({ label, icon, path }) => (
-          <ListItemButton
+          <Tooltip
             key={path}
-            selected={location.pathname === path || location.pathname.startsWith(path + '/')}
-            onClick={() => handleNav(path)}
-            sx={{ borderRadius: 2, mx: 1, my: 0.5 }}
+            title={label}
+            placement="right"
+            disableHoverListener={!railCollapsed}
+            disableFocusListener={!railCollapsed}
+            disableTouchListener={!railCollapsed}
           >
-            <ListItemIcon>{icon}</ListItemIcon>
-            <ListItemText primary={label} />
-          </ListItemButton>
+            <ListItemButton
+              selected={location.pathname === path || location.pathname.startsWith(path + '/')}
+              onClick={() => handleNav(path)}
+              sx={{
+                borderRadius: 2,
+                mx: railCollapsed ? 0.5 : 1,
+                my: 0.5,
+                justifyContent: railCollapsed ? 'center' : 'flex-start',
+                px: railCollapsed ? 1 : 2,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: railCollapsed ? 0 : 56,
+                  justifyContent: 'center',
+                  color: 'inherit',
+                }}
+              >
+                {icon}
+              </ListItemIcon>
+              {!railCollapsed && <ListItemText primary={label} />}
+            </ListItemButton>
+          </Tooltip>
         ))}
       </List>
     </Box>
@@ -95,9 +168,15 @@ export default function AppShell() {
         <Drawer
           variant="permanent"
           sx={{
-            width: DRAWER_WIDTH,
+            width: drawerWidth,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
+            transition: theme.transitions.create('width'),
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              transition: theme.transitions.create('width'),
+              overflowX: 'hidden',
+            },
           }}
         >
           {drawerContent}
@@ -110,7 +189,7 @@ export default function AppShell() {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           ModalProps={{ keepMounted: true }}
-          sx={{ '& .MuiDrawer-paper': { width: DRAWER_WIDTH } }}
+          sx={{ '& .MuiDrawer-paper': { width: DRAWER_EXPANDED_WIDTH } }}
         >
           {drawerContent}
         </Drawer>
@@ -172,6 +251,16 @@ export default function AppShell() {
               <MenuItem
                 onClick={() => {
                   setUserAnchor(null);
+                  setAppearanceOpen(true);
+                }}
+              >
+                <PaletteIcon fontSize="small" sx={{ mr: 1 }} />
+                {t('appearance.title')}
+              </MenuItem>
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  setUserAnchor(null);
                   logout();
                 }}
               >
@@ -185,15 +274,27 @@ export default function AppShell() {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 2, md: 3 },
-            pb: isMobile ? 10 : 3,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            ...mainOuterSx,
           }}
         >
-          <Outlet />
+          <Box
+            sx={{
+              p: { xs: 2, md: 3 },
+              pb: isMobile ? 10 : 3,
+              ...mainInnerSx,
+            }}
+          >
+            <Outlet />
+          </Box>
         </Box>
 
         {isMobile && <BottomNav />}
       </Box>
+
+      <AppearanceDialog open={appearanceOpen} onClose={() => setAppearanceOpen(false)} />
     </Box>
   );
 }
