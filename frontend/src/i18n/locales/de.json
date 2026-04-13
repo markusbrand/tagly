@@ -50,7 +50,7 @@
     "single_camera_hint": "Es wurde nur eine Kamera erkannt; Wechsel ist nicht möglich. Ohne Liste wird die Standard-Kamera (Umgebung) genutzt."
   },
   "assets": {
-    "name": "Name",
+    "name": "Anzeigename",
     "guid": "GUID",
     "status": "Status",
     "available": "Verfügbar",
@@ -107,9 +107,11 @@
   "onboarding": {
     "title": "Neues Objekt erfassen",
     "guid_label": "QR-Code / Objekt-ID",
-    "name_label": "Objektname",
+    "name_label": "Anzeigename",
+    "name_helper": "Wählen Sie einen gut merkbaren Namen; er wird nicht aus dem QR-Code übernommen.",
+    "name_required": "Bitte einen Anzeigenamen eingeben, um das Objekt zu erfassen.",
     "stammdaten_hint": "Pflichtfelder und Validierung entsprechen den im Admin unter „Benutzerdefinierte Felder“ definierten Asset-Feldern.",
-    "no_custom_fields": "Es sind noch keine Asset-Stammdatenfelder angelegt. Ein Administrator kann sie unter Verwaltung → Benutzerdefinierte Felder definieren. Sie können das Objekt trotzdem mit der QR-ID anlegen.",
+    "no_custom_fields": "Es sind noch keine Asset-Stammdatenfelder angelegt. Ein Administrator kann sie unter Verwaltung → Benutzerdefinierte Felder definieren. Geben Sie oben einen Anzeigenamen ein, um das Objekt zu erfassen.",
     "save": "Objekt erfassen",
     "success": "Objekt erfolgreich erfasst",
     "saved_offline": "Offline gespeichert – wird bei Verbindung synchronisiert",

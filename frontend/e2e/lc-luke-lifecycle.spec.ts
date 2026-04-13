@@ -228,6 +228,10 @@ test.describe('LC domain lifecycle (Luke)', () => {
       await page.goto(`/scanner/onboard/${encodeURIComponent(guid)}`);
       await expect(page.getByRole('heading', { name: /Register New Asset/i })).toBeVisible();
 
+      await page
+        .getByRole('textbox', { name: /Display name|Anzeigename/i })
+        .fill(label === 'uno' ? `${PREFIX}asset-uno` : `${PREFIX}asset-duo`);
+
       await customFieldInput(page, 'astr').fill(label === 'uno' ? 'Hello' : 'World');
       const dateInput = page.locator(`input[type="date"]`).first();
       if (label === 'uno') {
@@ -265,9 +269,6 @@ test.describe('LC domain lifecycle (Luke)', () => {
 
     const assetId1 = await onboardViaUi(guid1, 'uno');
     const assetId2 = await onboardViaUi(guid2, 'duo');
-
-    await apiPatchJson(page, `/assets/${assetId1}/`, { name: `${PREFIX}asset-uno` });
-    await apiPatchJson(page, `/assets/${assetId2}/`, { name: `${PREFIX}asset-duo` });
 
     const detail1 = await apiGetJson<{ custom_field_values: DefRow[]; name: string }>(
       page,

@@ -88,8 +88,7 @@ class AssetCreateSerializer(serializers.ModelSerializer):
         model = Asset
         fields = ["id", "guid", "name", "custom_fields"]
         read_only_fields = ["id"]
-        # `validate()` derives `name` from `guid` for QR onboarding; field-level "required" must not run first.
-        extra_kwargs = {"name": {"required": False, "allow_blank": True}}
+        extra_kwargs = {"name": {"required": True, "allow_blank": False}}
 
     def validate_guid(self, value):
         if value is None:
@@ -100,16 +99,16 @@ class AssetCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         name = (attrs.get("name") or "").strip()
-        guid = attrs.get("guid")
         if not name:
-            if guid:
-                attrs["name"] = f"QR-{str(guid)[:8]}"
-            else:
-                raise serializers.ValidationError(
-                    {"name": "Either a display name or a GUID (e.g. from QR scan) is required."},
-                )
-        else:
-            attrs["name"] = name
+            raise serializers.ValidationError(
+                {
+                    "name": (
+                        "Enter a display name for this asset. "
+                        "It must be chosen explicitly and is not derived from the QR code."
+                    ),
+                },
+            )
+        attrs["name"] = name
 
         cf = attrs.get("custom_fields")
         errs = validate_asset_custom_fields_for_asset_create(cf if cf is not None else {})

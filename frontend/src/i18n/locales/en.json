@@ -50,7 +50,7 @@
     "single_camera_hint": "Only one camera was detected, so switching is unavailable. Without a device list the default environment camera is used."
   },
   "assets": {
-    "name": "Name",
+    "name": "Display name",
     "guid": "GUID",
     "status": "Status",
     "available": "Available",
@@ -107,9 +107,11 @@
   "onboarding": {
     "title": "Register New Asset",
     "guid_label": "QR code / asset ID",
-    "name_label": "Asset name",
+    "name_label": "Display name",
+    "name_helper": "Choose a memorable name; it is not taken from the QR code.",
+    "name_required": "Enter a display name to register this asset.",
     "stammdaten_hint": "Required fields and validation match the asset fields configured under Admin → Custom Fields.",
-    "no_custom_fields": "No asset master-data fields are defined yet. An administrator can add them under Administration → Custom Fields. You can still register the asset using the QR ID.",
+    "no_custom_fields": "No asset master-data fields are defined yet. An administrator can add them under Administration → Custom Fields. Enter a display name above to register the asset.",
     "save": "Register Asset",
     "success": "Asset registered successfully",
     "saved_offline": "Saved offline - will sync when connected",

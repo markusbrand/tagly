@@ -64,17 +64,25 @@ class TestAssetAPI:
         assert response.data['name'] == 'Test Asset'
         assert 'guid' in response.data
 
-    def test_create_asset_guid_only_derives_display_name(self, authenticated_client, user):
-        """QR onboarding posts `guid` + `custom_fields` without `name`; validate() sets QR-xxxxxxxx."""
+    def test_create_asset_requires_display_name_with_guid(self, authenticated_client, user):
+        """QR onboarding must include an explicit display name; it is not derived from the GUID."""
         g = str(uuid.uuid4())
         response = authenticated_client.post(
             '/api/v1/assets/',
             {'guid': g},
             format='json',
         )
-        assert response.status_code == 201
-        assert response.data['guid'] == g
-        assert response.data['name'] == f'QR-{g[:8]}'
+        assert response.status_code == 400
+        assert 'name' in response.data
+
+        ok = authenticated_client.post(
+            '/api/v1/assets/',
+            {'guid': g, 'name': 'Workshop drill'},
+            format='json',
+        )
+        assert ok.status_code == 201
+        assert ok.data['guid'] == g
+        assert ok.data['name'] == 'Workshop drill'
 
     def test_get_asset_by_guid(self, authenticated_client, user):
         create_response = authenticated_client.post('/api/v1/assets/', {

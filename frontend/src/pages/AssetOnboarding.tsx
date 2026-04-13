@@ -42,6 +42,8 @@ export default function AssetOnboarding() {
   const [loadError, setLoadError] = useState('');
   const [loadingFields, setLoadingFields] = useState(true);
 
+  const [assetName, setAssetName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdAssetId, setCreatedAssetId] = useState<number | null>(null);
@@ -92,7 +94,14 @@ export default function AssetOnboarding() {
     if (!decodedGuid) return;
 
     setError('');
+    setNameError('');
     setFieldErrors({});
+
+    const trimmedName = assetName.trim();
+    if (!trimmedName) {
+      setNameError(t('onboarding.name_required'));
+      return;
+    }
 
     const localErrors = validateAssetCustomFieldValuesForCreate(definitions, values);
     if (Object.keys(localErrors).length > 0) {
@@ -111,6 +120,7 @@ export default function AssetOnboarding() {
         console.warn('[Onboarding] CSRF refresh before create failed', e);
       }
       const response = await assetService.create({
+        name: trimmedName,
         guid: decodedGuid,
         custom_fields: customFields,
       });
@@ -123,7 +133,7 @@ export default function AssetOnboarding() {
         await addPendingAction({
           method: 'POST',
           url: '/assets/',
-          data: { guid: decodedGuid, custom_fields: customFields },
+          data: { name: trimmedName, guid: decodedGuid, custom_fields: customFields },
         });
         setSavedOffline(true);
         setSnackOpen(true);
@@ -143,6 +153,13 @@ export default function AssetOnboarding() {
 
         const status = axiosErr.response?.status;
         let message = '';
+
+        let nameFieldErr = '';
+        if (data?.name) {
+          const nm = data.name as unknown;
+          nameFieldErr = Array.isArray(nm) ? nm.map(String).join(' ') : String(nm);
+        }
+        setNameError(nameFieldErr);
 
         if (status === 403 && data) {
           const d = flattenDrfDetail(data.detail);
@@ -164,7 +181,7 @@ export default function AssetOnboarding() {
           message = t('onboarding.error_fix_fields');
         }
 
-        if (!message) {
+        if (!message && !nameFieldErr) {
           message = t('common.error');
         }
 
@@ -181,6 +198,7 @@ export default function AssetOnboarding() {
     !loadingFields &&
     !loadError &&
     decodedGuid.length > 0 &&
+    assetName.trim().length > 0 &&
     !isSuccess;
 
   return (
@@ -241,6 +259,21 @@ export default function AssetOnboarding() {
                 value={decodedGuid}
                 fullWidth
                 slotProps={{ input: { readOnly: true } }}
+              />
+
+              <TextField
+                label={t('onboarding.name_label')}
+                value={assetName}
+                onChange={(e) => {
+                  setAssetName(e.target.value);
+                  setNameError('');
+                }}
+                helperText={nameError || t('onboarding.name_helper')}
+                error={Boolean(nameError)}
+                required
+                fullWidth
+                disabled={isSubmitting || isSuccess}
+                inputProps={{ maxLength: 255 }}
               />
 
               {definitions.length === 0 ? (
