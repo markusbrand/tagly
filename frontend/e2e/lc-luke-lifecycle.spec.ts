@@ -4,7 +4,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { apiGetJson, apiPatchJson, apiPostJson, apiPutJson } from './helpers/apiSession';
+import { apiGetJson, apiPostJson, apiPutJson } from './helpers/apiSession';
 import { e2eCredentials } from './env';
 import { runDjangoManage } from './helpers/runManage';
 
