@@ -120,22 +120,51 @@ class BackgroundImageView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = request.user
-        if user.appearance_bg_image:
-            user.appearance_bg_image.delete(save=False)
+        try:
+            if user.appearance_bg_image:
+                user.appearance_bg_image.delete(save=False)
 
-        user.appearance_bg_image = serializer.validated_data["image"]
-        user.save(update_fields=["appearance_bg_image"])
+            user.appearance_bg_image = serializer.validated_data["image"]
+            user.save(update_fields=["appearance_bg_image"])
+        except OSError as exc:
+            logger.exception(
+                "Background image save failed for user=%s (media write/delete): %s",
+                user.username,
+                exc,
+            )
+            return Response(
+                {
+                    "image": [
+                        "Server could not store the file. Check disk space and that the media "
+                        "directory is writable.",
+                    ],
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
         logger.info("User %s uploaded background image", user.username)
         return Response(UserSerializer(user, context={"request": request}).data)
 
     @extend_schema(tags=["users"], responses={204: None})
     def delete(self, request):
         user = request.user
-        if user.appearance_bg_image:
+        if not user.appearance_bg_image:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
             user.appearance_bg_image.delete(save=False)
             user.appearance_bg_image = ""
             user.save(update_fields=["appearance_bg_image"])
-            logger.info("User %s removed background image", user.username)
+        except OSError as exc:
+            logger.exception(
+                "Background image delete failed for user=%s: %s",
+                user.username,
+                exc,
+            )
+            return Response(
+                {"detail": "Could not remove the file from storage."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        logger.info("User %s removed background image", user.username)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
