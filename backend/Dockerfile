@@ -33,7 +33,7 @@ RUN python -m venv /opt/venv && \
 FROM python:3.12-slim
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq5 curl && \
+    apt-get install -y --no-install-recommends libpq5 curl gosu && \
     rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 1000 appuser && \
@@ -46,14 +46,18 @@ ENV PATH="/opt/venv/bin:$PATH" \
 
 WORKDIR /app
 COPY . .
-RUN python manage.py collectstatic --noinput 2>/dev/null || true && \
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh && \
+    python manage.py collectstatic --noinput 2>/dev/null || true && \
     chown -R appuser:appuser /app
 
-USER appuser
+# Start as root so the entrypoint can fix ownership on bind-mounted host media, then gosu → appuser.
+USER root
 
 EXPOSE 8008
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8008/api/v1/health/')" || exit 1
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["gunicorn", "tagly.wsgi:application", "--bind", "0.0.0.0:8008", "--workers", "2"]
