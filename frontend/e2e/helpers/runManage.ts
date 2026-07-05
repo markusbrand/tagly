@@ -17,6 +17,8 @@ export function runDjangoManage(args: string[]): string {
       encoding: 'utf-8',
       env: {
         ...process.env,
+        DB_ENGINE: 'django.db.backends.sqlite3',
+        DB_NAME: 'e2e_db.sqlite3',
         ALLOWED_HOSTS: process.env.ALLOWED_HOSTS ?? '*',
         DB_CONN_MAX_AGE: process.env.DB_CONN_MAX_AGE ?? '0',
         // Must match playwright.config.ts backendWebEnv: overdue task uses send_mail; without this CI defaults to SMTP and logs FAILED instead of SENT.
