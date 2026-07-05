@@ -20,8 +20,11 @@ const frontendOrigin = `http://127.0.0.1:${frontendPort}`;
 /** Sandbox Django from repo `.env` (often production-only ALLOWED_HOSTS) so Vite + Playwright origins work. */
 const backendWebEnv = {
   ...process.env,
+  TAGLY_E2E: 'True',
+  DB_ENGINE: 'django.db.backends.sqlite3',
+  DB_NAME: 'e2e_db.sqlite3',
   /** Avoid holding Postgres connections (CONN_MAX_AGE=600 + many requests) — prevents “too many clients” on small local DBs. */
-  DB_CONN_MAX_AGE: process.env.DB_CONN_MAX_AGE ?? '0',
+  DB_CONN_MAX_AGE: '0',
   /** Overdue E2E (LC-8): real SMTP must not run in CI / local Playwright. */
   EMAIL_BACKEND: process.env.EMAIL_BACKEND ?? 'django.core.mail.backends.locmem.EmailBackend',
   ALLOWED_HOSTS: '*',
@@ -39,14 +42,8 @@ const backendWebEnv = {
   ].join(','),
 };
 
-/**
- * E2E: starts Django then Vite dev (same-origin /api proxy as in docker-compose).
- * Preconditions for local runs: PostgreSQL + Redis reachable (e.g. `docker compose up -d db redis`).
- * If Postgres is published on a non-default host port, set `DB_PORT` (e.g. `5433` when compose maps `5433:5432`).
- */
 export default defineConfig({
   testDir: './e2e',
-  /** LC lifecycle mutates shared DB; single worker avoids races with other specs. */
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -58,10 +55,9 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  // Order matters: backend first, then Vite (same order as in Playwright’s array semantics).
   webServer: [
     {
-      command: `${djangoPython} manage.py migrate --noinput && ${djangoPython} manage.py ensure_e2e_user && ${djangoPython} manage.py runserver 0.0.0.0:${backendPort}`,
+      command: `rm -f e2e_db.sqlite3 && ${djangoPython} manage.py migrate --noinput && ${djangoPython} manage.py ensure_e2e_user && ${djangoPython} manage.py runserver 0.0.0.0:${backendPort}`,
       cwd: backendDir,
       env: backendWebEnv as { [key: string]: string },
       url: `${backendOrigin}/api/v1/health/`,

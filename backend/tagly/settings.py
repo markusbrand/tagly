@@ -1,8 +1,10 @@
 import os
 from pathlib import Path
 
+import sys
 from dotenv import load_dotenv
 
+# Load .env BEFORE anything else, but allow environment to override it.
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -90,15 +92,19 @@ WSGI_APPLICATION = "tagly.wsgi.application"
 
 # Database
 
+_TAGLY_E2E = _env_bool("TAGLY_E2E", False)
+_IS_TESTING = "test" in sys.argv or _TAGLY_E2E
+_DB_ENGINE = os.environ.get("DB_ENGINE", "django.db.backends.postgresql")
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": _DB_ENGINE,
         "NAME": os.environ.get("DB_NAME", "tagly"),
         "USER": os.environ.get("DB_USER", "tagly"),
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
-        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "600")),
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "0" if _IS_TESTING or "sqlite" in _DB_ENGINE else "600")),
     }
 }
 

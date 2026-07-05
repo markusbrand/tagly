@@ -24,6 +24,8 @@ class Command(BaseCommand):
         user.email = user.email or f"{username}@e2e.local"
         # Admin role required for LC E2E: custom fields admin, QR PDF, notification log API.
         user.role = User.Role.ADMIN
+        user.is_staff = True
+        user.is_superuser = True
         user.is_active = True
         user.set_password(password)
         user.save()
