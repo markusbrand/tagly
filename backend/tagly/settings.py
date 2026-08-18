@@ -174,6 +174,7 @@ REST_FRAMEWORK = {
         "login": os.environ.get("LOGIN_THROTTLE_RATE", "30/minute").strip()
         or "30/minute",
     },
+    "NUM_PROXIES": 1 if _env_bool("DJANGO_BEHIND_HTTPS_PROXY", False) else None,
 }
 
 SPECTACULAR_SETTINGS = {
