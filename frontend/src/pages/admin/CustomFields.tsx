@@ -296,12 +296,12 @@ export default function CustomFields() {
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title={t('common.edit')}>
-                      <IconButton size="small" onClick={() => openEdit(field)}>
+                      <IconButton size="small" onClick={() => openEdit(field)} aria-label={t('common.edit')}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('common.delete')}>
-                      <IconButton size="small" color="error" onClick={() => confirmDelete(field)}>
+                      <IconButton size="small" color="error" onClick={() => confirmDelete(field)} aria-label={t('common.delete')}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
