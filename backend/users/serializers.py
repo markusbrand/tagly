@@ -1,4 +1,5 @@
 import re
+import typing
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -104,7 +105,7 @@ class BackgroundImageUploadSerializer(serializers.Serializer):
 
     MAX_SIZE = 5 * 1024 * 1024  # 5 MB
     # MPO = multi-picture JPEG container; many phones report it as JPEG bytes but Pillow uses format "MPO".
-    ALLOWED_PILLOW = {"JPEG", "PNG", "WEBP", "MPO"}
+    ALLOWED_PILLOW: typing.ClassVar[set[str]] = {"JPEG", "PNG", "WEBP", "MPO"}
 
     def validate_image(self, value):
         if value.size > self.MAX_SIZE:
