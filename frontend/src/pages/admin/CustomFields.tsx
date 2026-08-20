@@ -269,25 +269,25 @@ export default function CustomFields() {
                   </TableCell>
                   <TableCell>{field.display_order}</TableCell>
                   <TableCell align="right">
-                    <Tooltip title={t('admin.move_up', 'Move Up')}>
+                    <Tooltip title="Move Up">
                       <span>
                         <IconButton
                           size="small"
                           disabled={idx === 0}
                           onClick={() => handleReorder(field, 'up')}
-                          aria-label={t('admin.move_up', 'Move Up')}
+                          aria-label="Move Up"
                         >
                           <ArrowUpward fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
-                    <Tooltip title={t('admin.move_down', 'Move Down')}>
+                    <Tooltip title="Move Down">
                       <span>
                         <IconButton
                           size="small"
                           disabled={idx === fields.length - 1}
                           onClick={() => handleReorder(field, 'down')}
-                          aria-label={t('admin.move_down', 'Move Down')}
+                          aria-label="Move Down"
                         >
                           <ArrowDownward fontSize="small" />
                         </IconButton>
