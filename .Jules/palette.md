@@ -4,3 +4,8 @@
 ## 2024-05-15 - MUI Tooltips on Disabled Elements
 **Learning:** By default, MUI `Tooltip` components attached directly to disabled elements (like an `IconButton`) do not display when hovered, because disabled elements block mouse events.
 **Action:** Wrap the disabled element in a `<span>` before wrapping it with a `Tooltip`. Ensure the disabled element still receives an `aria-label` for screen reader accessibility, as the `Tooltip` will handle the wrapper.
+
+## 2023-10-27 - Translating Icon-Only Button Tooltips and Adding ARIA Labels
+**Learning:** Found multiple icon-only buttons in `AppShell.tsx` (top navigation bar) that either lacked ARIA labels or had untranslated/inaccurate tooltips. For instance, the user menu icon (`AccountCircle`) had a tooltip stating "Sign Out" even though it opens a menu containing both appearance settings and sign-out options.
+**Action:** Always verify that icon-only buttons not only have descriptive tooltips but that those tooltips accurately reflect the button's action (e.g., opening a menu vs. performing a direct action). Additionally, ensure that these buttons always have corresponding `aria-label`s and that all user-facing strings are fully internationalized (added to both `en.json` and `de.json`).
+

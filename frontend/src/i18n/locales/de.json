@@ -26,7 +26,12 @@
     "admin": "Verwaltung",
     "settings": "Einstellungen",
     "collapse_drawer": "Seitenleiste einklappen",
-    "expand_drawer": "Seitenleiste ausklappen"
+    "expand_drawer": "Seitenleiste ausklappen",
+    "menu": "Menü",
+    "dark_mode": "Dunkelmodus",
+    "light_mode": "Hellmodus",
+    "language": "Sprache",
+    "user_menu": "Benutzermenü"
   },
   "scanner": {
     "scan_qr": "QR-Code scannen",

@@ -199,23 +199,38 @@ export default function AppShell() {
         <AppBar position="sticky" color="default" elevation={1}>
           <Toolbar>
             {isMobile && (
-              <IconButton edge="start" onClick={() => setDrawerOpen(true)} sx={{ mr: 1 }}>
-                <MenuIcon />
-              </IconButton>
+              <Tooltip title={t('nav.menu')}>
+                <IconButton
+                  edge="start"
+                  onClick={() => setDrawerOpen(true)}
+                  sx={{ mr: 1 }}
+                  aria-label={t('nav.menu')}
+                >
+                  <MenuIcon />
+                </IconButton>
+              </Tooltip>
             )}
 
             <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
               {isMobile ? t('common.app_name') : ''}
             </Typography>
 
-            <Tooltip title={mode === 'light' ? 'Dark mode' : 'Light mode'}>
-              <IconButton onClick={toggleMode} color="inherit">
+            <Tooltip title={mode === 'light' ? t('nav.dark_mode') : t('nav.light_mode')}>
+              <IconButton
+                onClick={toggleMode}
+                color="inherit"
+                aria-label={mode === 'light' ? t('nav.dark_mode') : t('nav.light_mode')}
+              >
                 {mode === 'light' ? <DarkMode /> : <LightMode />}
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Language">
-              <IconButton onClick={(e) => setLangAnchor(e.currentTarget)} color="inherit">
+            <Tooltip title={t('nav.language')}>
+              <IconButton
+                onClick={(e) => setLangAnchor(e.currentTarget)}
+                color="inherit"
+                aria-label={t('nav.language')}
+              >
                 <Translate />
               </IconButton>
             </Tooltip>
@@ -238,8 +253,12 @@ export default function AppShell() {
               ))}
             </Menu>
 
-            <Tooltip title={t('auth.logout_button')}>
-              <IconButton onClick={(e) => setUserAnchor(e.currentTarget)} color="inherit">
+            <Tooltip title={t('nav.user_menu')}>
+              <IconButton
+                onClick={(e) => setUserAnchor(e.currentTarget)}
+                color="inherit"
+                aria-label={t('nav.user_menu')}
+              >
                 <AccountCircle />
               </IconButton>
             </Tooltip>
