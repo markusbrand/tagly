@@ -1,16 +1,16 @@
 import threading
 
-from core.utils import get_client_ip
+from .utils import get_client_ip
 
 _thread_local = threading.local()
 
 
 def get_current_user():
-    return getattr(_thread_local, "user", None)
+    return getattr(_thread_local, 'user', None)
 
 
 def get_current_ip():
-    return getattr(_thread_local, "ip_address", None)
+    return getattr(_thread_local, 'ip_address', None)
 
 
 class AuditMiddleware:

@@ -98,14 +98,6 @@ chore: bump MUI to v7.4
 docs: add Gmail SMTP setup instructions
 ```
 
-## Releases & Versioning
-
-Tagly uses [Release Please](https://github.com/googleapis/release-please) to automate releases:
-
-1. As pull requests with Conventional Commits are merged into `main`, Release Please automatically maintains a Release PR.
-2. The Release PR updates the root `CHANGELOG.md`, `version.txt`, `frontend/package.json`, and OpenAPI schema version in `backend/tagly/settings.py`.
-3. When maintainers merge the Release PR, Release Please automatically creates a GitHub Release and tags the commit (e.g. `v1.1.0`).
-
 ## Reporting Issues
 
 Open a GitHub issue with:

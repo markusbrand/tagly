@@ -71,7 +71,6 @@ export default function UserManagement() {
   }, [t]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers();
   }, [fetchUsers]);
 
@@ -161,7 +160,7 @@ export default function UserManagement() {
                     <TableCell>{user.language}</TableCell>
                     <TableCell align="right">
                       <Tooltip title={t('common.edit')}>
-                        <IconButton size="small" onClick={() => openEdit(user)} aria-label={t('common.edit')}>
+                        <IconButton size="small" onClick={() => openEdit(user)}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -178,7 +177,6 @@ export default function UserManagement() {
         color="primary"
         onClick={() => setCreateOpen(true)}
         sx={{ position: 'fixed', bottom: 24, right: 24 }}
-        aria-label={t('admin.add_user')}
       >
         <AddIcon />
       </Fab>

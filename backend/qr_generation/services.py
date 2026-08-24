@@ -1,6 +1,6 @@
 import io
-import logging
 import uuid
+import logging
 
 import segno
 from reportlab.lib import colors
@@ -49,7 +49,7 @@ def _draw_tagly_logo_center(
 def generate_sticker_pdf(template, num_pages: int) -> tuple[io.BytesIO, list[str]]:
     """Generate a PDF with QR code stickers based on a template layout."""
     buffer = io.BytesIO()
-    _page_width, page_height = A4
+    page_width, page_height = A4
     c = pdf_canvas.Canvas(buffer, pagesize=A4)
 
     guids_generated = []
@@ -60,21 +60,13 @@ def generate_sticker_pdf(template, num_pages: int) -> tuple[io.BytesIO, list[str
                 guid = uuid.uuid4()
                 guids_generated.append(str(guid))
 
-                x = (
-                    template.left_margin_mm
-                    + col * template.h_pitch_mm
-                    + template.offset_x_mm
-                ) * mm
-                y_from_top = (
-                    template.top_margin_mm
-                    + row * template.v_pitch_mm
-                    + template.offset_y_mm
-                ) * mm
+                x = (template.left_margin_mm + col * template.h_pitch_mm + template.offset_x_mm) * mm
+                y_from_top = (template.top_margin_mm + row * template.v_pitch_mm + template.offset_y_mm) * mm
                 y = page_height - y_from_top - template.label_height_mm * mm
 
-                qr = segno.make(str(guid), error="H")
+                qr = segno.make(str(guid), error='H')
                 qr_buffer = io.BytesIO()
-                qr.save(qr_buffer, kind="png", scale=8, border=1)
+                qr.save(qr_buffer, kind='png', scale=8, border=1)
                 qr_buffer.seek(0)
 
                 qr_image = ImageReader(qr_buffer)
@@ -98,7 +90,5 @@ def generate_sticker_pdf(template, num_pages: int) -> tuple[io.BytesIO, list[str
     c.save()
     buffer.seek(0)
 
-    logger.info(
-        "Generated %d QR stickers across %d pages", len(guids_generated), num_pages
-    )
+    logger.info("Generated %d QR stickers across %d pages", len(guids_generated), num_pages)
     return buffer, guids_generated

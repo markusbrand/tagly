@@ -1,8 +1,0 @@
-[tool.ruff]
-extend-exclude = ["**/migrations/*"]
-
-[tool.ruff.lint]
-ignore = [
-    "RUF012",
-    "BLE001",
-]

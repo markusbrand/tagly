@@ -39,12 +39,8 @@ class BorrowRecord(models.Model):
         verbose_name_plural = "borrow records"
         indexes = [
             models.Index(fields=["status"], name="idx_borrow_status"),
-            models.Index(
-                fields=["status", "borrowed_until"], name="idx_borrow_overdue"
-            ),
-            models.Index(
-                fields=["asset", "-created_at"], name="idx_borrow_asset_history"
-            ),
+            models.Index(fields=["status", "borrowed_until"], name="idx_borrow_overdue"),
+            models.Index(fields=["asset", "-created_at"], name="idx_borrow_asset_history"),
         ]
 
     def __str__(self):
