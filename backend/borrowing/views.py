@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from assets.models import Asset
 from audit.models import AuditLog
+from audit.utils import get_client_ip
 from users.permissions import IsAuthenticated
 
 from .models import BorrowRecord
@@ -21,13 +22,6 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _get_client_ip(request):
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR")
 
 
 @extend_schema(
@@ -66,7 +60,7 @@ class BorrowCreateView(APIView):
                 "customer_id": data["customer_id"],
                 "borrowed_from": str(borrow.borrowed_from),
             },
-            ip_address=_get_client_ip(request),
+            ip_address=get_client_ip(request),
         )
 
         logger.info(
@@ -131,7 +125,7 @@ class BorrowReturnView(APIView):
                 "status": BorrowRecord.Status.RETURNED,
                 "returned_at": str(borrow.returned_at),
             },
-            ip_address=_get_client_ip(request),
+            ip_address=get_client_ip(request),
         )
 
         logger.info(

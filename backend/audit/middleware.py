@@ -1,5 +1,7 @@
 import threading
 
+from .utils import get_client_ip
+
 _thread_local = threading.local()
 
 
@@ -17,6 +19,6 @@ class AuditMiddleware:
 
     def __call__(self, request):
         _thread_local.user = request.user if request.user.is_authenticated else None
-        _thread_local.ip_address = request.META.get('REMOTE_ADDR')
+        _thread_local.ip_address = get_client_ip(request)
         response = self.get_response(request)
         return response

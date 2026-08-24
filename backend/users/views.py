@@ -6,6 +6,7 @@ from rest_framework import generics, serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from audit.utils import get_client_ip
 
 from .permissions import IsAdmin, IsAuthenticated
 from .throttling import LoginIPThrottle
@@ -60,7 +61,7 @@ class LoginView(APIView):
             logger.warning(
                 "Failed login attempt for username=%s from IP=%s",
                 serializer.validated_data["username"],
-                request.META.get("REMOTE_ADDR"),
+                get_client_ip(request),
             )
             return Response(
                 {"detail": "Invalid credentials."},

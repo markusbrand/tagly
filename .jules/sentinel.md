@@ -1,0 +1,4 @@
+## 2024-05-18 - IP Spoofing via X-Forwarded-For
+**Vulnerability:** Audit logs, failed login tracking, and DRF rate limiting blindly trusted the `X-Forwarded-For` header or insecurely fell back to `REMOTE_ADDR`, allowing attackers to spoof their IP address. DRF's `get_ident` used in `SimpleRateThrottle` also blindly trusts `X-Forwarded-For` by default if configured, without verifying the reverse proxy configuration.
+**Learning:** IP addresses are easily spoofed if `X-Forwarded-For` is parsed without ensuring the application is behind a trusted proxy (`USE_X_FORWARDED_HOST`). In DRF, `get_ident` is risky to use for rate limiting when proxy setups vary, as attackers could spoof their IP to bypass throttling.
+**Prevention:** Always use a central, secure utility for fetching client IPs that checks if trusting `X-Forwarded-For` is explicitly enabled in settings (e.g. `USE_X_FORWARDED_HOST`). Override DRF rate limit cache keys to use this secure utility.
