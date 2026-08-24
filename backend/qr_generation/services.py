@@ -1,6 +1,6 @@
 import io
-import uuid
 import logging
+import uuid
 
 import segno
 from reportlab.lib import colors
@@ -49,7 +49,7 @@ def _draw_tagly_logo_center(
 def generate_sticker_pdf(template, num_pages: int) -> tuple[io.BytesIO, list[str]]:
     """Generate a PDF with QR code stickers based on a template layout."""
     buffer = io.BytesIO()
-    page_width, page_height = A4
+    _page_width, page_height = A4
     c = pdf_canvas.Canvas(buffer, pagesize=A4)
 
     guids_generated = []

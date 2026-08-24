@@ -107,7 +107,7 @@ class BorrowReturnView(APIView):
         old_status = borrow.status
         borrow.status = BorrowRecord.Status.RETURNED
         borrow.returned_at = data["returned_at"]
-        if "notes" in data and data["notes"]:
+        if data.get("notes"):
             borrow.notes = data["notes"]
         borrow.save(update_fields=["status", "returned_at", "notes"])
 

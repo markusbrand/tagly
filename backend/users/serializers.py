@@ -111,7 +111,7 @@ class BackgroundImageUploadSerializer(serializers.Serializer):
             value.seek(0)
             with Image.open(BytesIO(raw)) as img:
                 fmt = (img.format or "").upper()
-        except Exception:
+        except Exception:  # noqa: BLE001
             raise serializers.ValidationError(
                 "Invalid or unsupported image file. Use JPEG, PNG, or WebP.",
             ) from None

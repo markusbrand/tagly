@@ -1,7 +1,7 @@
 import os
+import sys
 from pathlib import Path
 
-import sys
 from dotenv import load_dotenv
 
 # Load .env BEFORE anything else, but allow environment to override it.

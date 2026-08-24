@@ -102,4 +102,4 @@ def _send_and_log(subject, message, record, recipient_email):
             status=NotificationLog.Status.FAILED,
             error_message=str(e),
         )
-        logger.error("Failed to send overdue notification to %s: %s", recipient_email, e)
+        logger.exception("Failed to send overdue notification to %s: %s", recipient_email, e)

@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 def get_client_ip(request):
     """
     Securely get the client IP address.

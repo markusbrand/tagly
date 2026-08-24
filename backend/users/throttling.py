@@ -6,6 +6,7 @@ ScopedRateThrottle uses a class-level snapshot of api_settings that ignores over
 
 from django.conf import settings
 from rest_framework.throttling import SimpleRateThrottle
+
 from audit.utils import get_client_ip
 
 

@@ -1,6 +1,5 @@
 import logging
 
-from audit.utils import get_client_ip
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, serializers, status
@@ -8,6 +7,8 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from audit.utils import get_client_ip
 
 from .permissions import IsAdmin, IsAuthenticated
 from .serializers import (
@@ -42,9 +43,9 @@ ThrottledResponse = inline_serializer(
     responses={200: UserSerializer, 401: LoginErrorResponse, 429: ThrottledResponse},
 )
 class LoginView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
-    throttle_classes = [LoginIPThrottle]
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
+    throttle_classes = (LoginIPThrottle,)
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -74,7 +75,7 @@ class LoginView(APIView):
 
 @extend_schema(tags=["users"], request=None, responses={status.HTTP_204_NO_CONTENT: None})
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         logger.info("User %s logged out", request.user.username)
@@ -83,7 +84,7 @@ class LogoutView(APIView):
 
 
 class MeView(generics.RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
     def get_object(self):
@@ -91,7 +92,7 @@ class MeView(generics.RetrieveAPIView):
 
 
 class UserPreferencesView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     serializer_class = UserPreferencesSerializer
     http_method_names = ["patch"]
 
@@ -100,7 +101,7 @@ class UserPreferencesView(generics.UpdateAPIView):
 
 
 class BackgroundImageView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     parser_classes = [MultiPartParser, FormParser]
 
     @extend_schema(tags=["users"], request=BackgroundImageUploadSerializer, responses={200: UserSerializer})
@@ -135,8 +136,8 @@ class BackgroundImageView(APIView):
             return Response(
                 {
                     "image": [
-                        "Server could not store the file. Check disk space and that the media "
-                        "directory is writable.",
+                        ("Server could not store the file. Check disk space and that the media "
+                        "directory is writable."),
                     ],
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -169,7 +170,7 @@ class BackgroundImageView(APIView):
 
 
 class UserListView(generics.ListCreateAPIView):
-    permission_classes = [IsAdmin]
+    permission_classes = (IsAdmin,)
     queryset = User.objects.all()
 
     def get_serializer_class(self):
@@ -185,7 +186,7 @@ class UserListView(generics.ListCreateAPIView):
 class UserDetailView(generics.RetrieveUpdateAPIView):
     """Admin: get or update a user (role, language, is_active)."""
 
-    permission_classes = [IsAdmin]
+    permission_classes = (IsAdmin,)
     queryset = User.objects.all()
 
     def get_serializer_class(self):
@@ -217,8 +218,8 @@ CsrfResponse = inline_serializer(
 
 @extend_schema(tags=["users"], responses={200: CsrfResponse})
 class CsrfTokenView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request):
         from django.middleware.csrf import get_token
@@ -237,8 +238,8 @@ HealthResponse = inline_serializer(
 
 @extend_schema(tags=["health"], responses={200: HealthResponse})
 class HealthCheckView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def get(self, request):
         return Response({"status": "ok"})
