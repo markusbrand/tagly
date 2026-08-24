@@ -45,7 +45,9 @@ class Asset(models.Model):
             models.Index(fields=["status"], name="idx_asset_status"),
             models.Index(fields=["is_deleted"], name="idx_asset_is_deleted"),
             models.Index(fields=["name"], name="idx_asset_name"),
-            models.Index(fields=["status", "is_deleted"], name="idx_asset_status_deleted"),
+            models.Index(
+                fields=["status", "is_deleted"], name="idx_asset_status_deleted"
+            ),
             models.Index(fields=["-created_at"], name="idx_asset_created_at"),
         ]
 

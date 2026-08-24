@@ -78,7 +78,10 @@ class BorrowCreateView(APIView):
 
         logger.info(
             "Borrow created: record=%d asset=%d customer=%d user=%s",
-            borrow.pk, asset.pk, data["customer_id"], request.user.username,
+            borrow.pk,
+            asset.pk,
+            data["customer_id"],
+            request.user.username,
         )
 
         output = BorrowRecordSerializer(borrow).data
@@ -100,7 +103,9 @@ class BorrowReturnView(APIView):
     @transaction.atomic
     def post(self, request, pk):
         try:
-            borrow = BorrowRecord.objects.select_related("asset", "customer", "user").get(pk=pk)
+            borrow = BorrowRecord.objects.select_related(
+                "asset", "customer", "user"
+            ).get(pk=pk)
         except BorrowRecord.DoesNotExist:
             return Response(
                 {"detail": "Borrow record not found."},
@@ -120,7 +125,7 @@ class BorrowReturnView(APIView):
         old_status = borrow.status
         borrow.status = BorrowRecord.Status.RETURNED
         borrow.returned_at = data["returned_at"]
-        if "notes" in data and data["notes"]:
+        if data.get("notes"):
             borrow.notes = data["notes"]
         borrow.save(update_fields=["status", "returned_at", "notes"])
 
@@ -143,7 +148,9 @@ class BorrowReturnView(APIView):
 
         logger.info(
             "Borrow returned: record=%d asset=%d user=%s",
-            borrow.pk, asset.pk, request.user.username,
+            borrow.pk,
+            asset.pk,
+            request.user.username,
         )
 
         output = BorrowRecordSerializer(borrow).data

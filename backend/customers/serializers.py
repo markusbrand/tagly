@@ -6,6 +6,7 @@ from .models import Customer
 
 try:
     import phonenumbers
+
     HAS_PHONENUMBERS = True
 except ImportError:
     HAS_PHONENUMBERS = False
@@ -15,9 +16,17 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = [
-            "id", "first_name", "last_name", "address",
-            "postal_code", "city", "country", "phone", "email",
-            "created_at", "updated_at",
+            "id",
+            "first_name",
+            "last_name",
+            "address",
+            "postal_code",
+            "city",
+            "country",
+            "phone",
+            "email",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -34,14 +43,14 @@ class CustomerSerializer(serializers.ModelSerializer):
                     "Invalid phone number format. Use international format, e.g. +491234567890."
                 )
         else:
-            if not re.match(r'^\+?[\d\s\-()]{7,}$', value):
+            if not re.match(r"^\+?[\d\s\-()]{7,}$", value):
                 raise serializers.ValidationError("Invalid phone number format.")
         return value
 
     def validate_email(self, value):
         if not value:
             return value
-        if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', value):
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value):
             raise serializers.ValidationError("Invalid email format.")
         return value
 
@@ -55,8 +64,15 @@ class CustomerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = [
-            "id", "first_name", "last_name", "address", "postal_code",
-            "city", "country", "email", "phone",
+            "id",
+            "first_name",
+            "last_name",
+            "address",
+            "postal_code",
+            "city",
+            "country",
+            "email",
+            "phone",
         ]
         read_only_fields = fields
 

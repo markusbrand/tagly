@@ -10,8 +10,12 @@ from .models import AuditLog
 logger = logging.getLogger(__name__)
 
 AUDITED_MODELS = [
-    'Asset', 'Customer', 'BorrowRecord',
-    'CustomFieldDefinition', 'CustomFieldValue', 'StickerTemplate',
+    "Asset",
+    "Customer",
+    "BorrowRecord",
+    "CustomFieldDefinition",
+    "CustomFieldValue",
+    "StickerTemplate",
 ]
 
 
@@ -24,7 +28,7 @@ def _serialize_instance(instance):
         data = model_to_dict(instance)
         return {k: str(v) for k, v in data.items()}
     except Exception:
-        return {'id': str(instance.pk)}
+        return {"id": str(instance.pk)}
 
 
 @receiver(pre_save)
@@ -33,7 +37,9 @@ def audit_pre_save(sender, instance, **kwargs):
         return
     if instance.pk:
         try:
-            instance._audit_old_value = _serialize_instance(sender.objects.get(pk=instance.pk))
+            instance._audit_old_value = _serialize_instance(
+                sender.objects.get(pk=instance.pk)
+            )
         except sender.DoesNotExist:
             instance._audit_old_value = None
     else:
@@ -50,7 +56,7 @@ def audit_post_save(sender, instance, created, **kwargs):
         action=AuditLog.Action.CREATE if created else AuditLog.Action.UPDATE,
         entity_type=sender.__name__,
         entity_id=instance.pk,
-        old_value=getattr(instance, '_audit_old_value', None),
+        old_value=getattr(instance, "_audit_old_value", None),
         new_value=_serialize_instance(instance),
         ip_address=get_current_ip(),
     )

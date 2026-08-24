@@ -32,9 +32,15 @@ urlpatterns = [
     path("api/v1/assets/", include("assets.urls", namespace="assets")),
     path("api/v1/customers/", include("customers.urls", namespace="customers")),
     path("api/v1/borrowing/", include("borrowing.urls", namespace="borrowing")),
-    path("api/v1/custom-fields/", include("custom_fields.urls", namespace="custom_fields")),
+    path(
+        "api/v1/custom-fields/",
+        include("custom_fields.urls", namespace="custom_fields"),
+    ),
     path("api/v1/qr/", include("qr_generation.urls", namespace="qr_generation")),
-    path("api/v1/notifications/", include("notifications.urls", namespace="notifications")),
+    path(
+        "api/v1/notifications/",
+        include("notifications.urls", namespace="notifications"),
+    ),
     path("api/v1/audit/", include("audit.urls", namespace="audit")),
 ]
 
