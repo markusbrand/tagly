@@ -1,5 +1,5 @@
 from . import settings as _base_settings
-from .settings import *
+from .settings import *  # noqa: F403
 
 # Avoid flaky tests when many login attempts run in one test process.
 _rf = dict(_base_settings.REST_FRAMEWORK)

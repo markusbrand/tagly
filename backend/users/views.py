@@ -8,6 +8,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.utils import get_client_ip
+
 from .permissions import IsAdmin, IsAuthenticated
 from .serializers import (
     BackgroundImageUploadSerializer,
@@ -59,7 +61,7 @@ class LoginView(APIView):
             logger.warning(
                 "Failed login attempt for username=%s from IP=%s",
                 serializer.validated_data["username"],
-                request.META.get("REMOTE_ADDR"),
+                get_client_ip(request),
             )
             return Response(
                 {"detail": "Invalid credentials."},
@@ -139,8 +141,10 @@ class BackgroundImageView(APIView):
             return Response(
                 {
                     "image": [
-                        ("Server could not store the file. Check disk space and that the media "
-                        "directory is writable."),
+                        (
+                            "Server could not store the file. Check disk space and that the media "
+                            "directory is writable."
+                        ),
                     ],
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
