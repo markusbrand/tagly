@@ -13,8 +13,9 @@
 **Learning:** Found multiple icon-only buttons (like Menu, Edit, Delete, Move Up/Down) that lacked `aria-label` attributes, affecting screen reader users. MUI's Tooltip doesn't implicitly add ARIA labels to buttons if they aren't explicitly provided.
 **Action:** Always ensure icon-only buttons have an explicit `aria-label`, either through raw text or localized strings (e.g., `t('common.edit')`).
 
-## 2023-10-27 - Added ARIA labels to IconButtons
-**Learning:** The AppShell uses icon-only buttons for various global actions (drawer toggle, theme toggle, translation, user settings) which were missing `aria-label` attributes despite having tooltips, making them less accessible to screen readers.
-**Action:** Add `aria-label` to `IconButton`s across the application.
+## 2026-08-19 - Missing ARIA Labels on Icon Buttons
+**Learning:** Many interactive icon-only buttons (like drawer toggle, mode switch, edit, delete) across `AppShell` and admin components lacked `aria-label` attributes, relying solely on tooltips for context which isn't sufficient for screen readers.
+**Action:** Consistently apply `aria-label` to all `<IconButton>` components, utilizing the existing i18n translation functions (e.g., `t('common.edit')`) where possible to ensure accessible labels are localized.
+
 
 
