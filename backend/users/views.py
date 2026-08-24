@@ -139,10 +139,8 @@ class BackgroundImageView(APIView):
             return Response(
                 {
                     "image": [
-                        (
-                            "Server could not store the file. Check disk space and that the media "
-                            "directory is writable."
-                        ),
+                        ("Server could not store the file. Check disk space and that the media "
+                        "directory is writable."),
                     ],
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
