@@ -22,9 +22,7 @@ def _is_empty_value(value, field_type: str) -> bool:
     ):
         if value is None:
             return True
-        if isinstance(value, str) and str(value).strip() == "":
-            return True
-        return False
+        return bool(isinstance(value, str) and str(value).strip() == "")
     if isinstance(value, str):
         return value.strip() == ""
     return False
@@ -45,7 +43,12 @@ def _coerce_rules(rules: dict) -> dict:
     """
     out = {}
     for k, v in (rules or {}).items():
-        if isinstance(v, (int, float)) and k in ("min", "max", "min_length", "max_length"):
+        if isinstance(v, (int, float)) and k in (
+            "min",
+            "max",
+            "min_length",
+            "max_length",
+        ):
             out[k] = int(v) if k.endswith("_length") else v
         elif isinstance(v, str):
             if k in ("min_length", "max_length"):
@@ -88,7 +91,9 @@ def _validate_single(definition: CustomFieldDefinition, value) -> str | None:
                 if not re.search(pat, s):
                     return "Value does not match the required pattern."
             except re.error:
-                logger.warning("Invalid regex in custom field definition id=%s", definition.pk)
+                logger.warning(
+                    "Invalid regex in custom field definition id=%s", definition.pk
+                )
         return None
 
     if ft == CustomFieldDefinition.FieldType.DATE:
@@ -127,12 +132,10 @@ def _validate_single(definition: CustomFieldDefinition, value) -> str | None:
             d = Decimal(str(value))
         except (InvalidOperation, TypeError, ValueError):
             return "Expected a decimal number."
-        if "min" in rules:
-            if d < Decimal(str(rules["min"])):
-                return f"Must be >= {rules['min']}."
-        if "max" in rules:
-            if d > Decimal(str(rules["max"])):
-                return f"Must be <= {rules['max']}."
+        if "min" in rules and d < Decimal(str(rules["min"])):
+            return f"Must be >= {rules['min']}."
+        if "max" in rules and d > Decimal(str(rules["max"])):
+            return f"Must be <= {rules['max']}."
         return None
 
     if ft == CustomFieldDefinition.FieldType.SINGLE_SELECT:
@@ -151,7 +154,9 @@ def _validate_single(definition: CustomFieldDefinition, value) -> str | None:
     return None
 
 
-def validate_asset_custom_fields_for_asset_create(values: dict | None) -> dict[str, str]:
+def validate_asset_custom_fields_for_asset_create(
+    values: dict | None,
+) -> dict[str, str]:
     """
     Stricter validation for POST /assets/ (onboarding / inventory create).
 
@@ -190,10 +195,9 @@ def validate_asset_custom_fields_for_asset_create(values: dict | None) -> dict[s
 
         raw = values[fid]
 
-        if d.is_mandatory:
-            if _is_empty_value(raw, d.field_type):
-                errors[fid] = f'"{d.name}" is required.'
-                continue
+        if d.is_mandatory and _is_empty_value(raw, d.field_type):
+            errors[fid] = f'"{d.name}" is required.'
+            continue
 
         if _is_empty_value(raw, d.field_type):
             continue
@@ -225,10 +229,9 @@ def validate_asset_custom_fields_payload(values: dict | None) -> dict[str, str]:
         else:
             raw = None
 
-        if d.is_mandatory:
-            if fid not in values or _is_empty_value(raw, d.field_type):
-                errors[fid] = f'"{d.name}" is required.'
-                continue
+        if d.is_mandatory and (fid not in values or _is_empty_value(raw, d.field_type)):
+            errors[fid] = f'"{d.name}" is required.'
+            continue
 
         if fid not in values or _is_empty_value(raw, d.field_type):
             continue

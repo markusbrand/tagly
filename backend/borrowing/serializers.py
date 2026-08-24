@@ -21,10 +21,14 @@ class BorrowRecordSerializer(serializers.ModelSerializer):
     customer = _NestedCustomerSerializer(read_only=True)
     user = _NestedUserSerializer(read_only=True)
     asset_id = serializers.PrimaryKeyRelatedField(
-        queryset=Asset.objects.all(), source="asset", write_only=True,
+        queryset=Asset.objects.all(),
+        source="asset",
+        write_only=True,
     )
     customer_id = serializers.PrimaryKeyRelatedField(
-        queryset=Customer.objects.all(), source="customer", write_only=True,
+        queryset=Customer.objects.all(),
+        source="customer",
+        write_only=True,
     )
 
     class Meta:

@@ -30,4 +30,6 @@ class AuditLog(models.Model):
 
     def __str__(self):
         actor = self.user.username if self.user else "system"
-        return f"{actor} {self.get_action_display()} {self.entity_type}#{self.entity_id}"
+        return (
+            f"{actor} {self.get_action_display()} {self.entity_type}#{self.entity_id}"
+        )

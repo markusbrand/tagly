@@ -44,7 +44,9 @@ class AssetListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         qs = Asset.objects.select_related("created_by")
 
-        include_deleted = self.request.query_params.get("include_deleted", "").lower() == "true"
+        include_deleted = (
+            self.request.query_params.get("include_deleted", "").lower() == "true"
+        )
         if not include_deleted:
             qs = qs.filter(is_deleted=False)
 
@@ -60,7 +62,12 @@ class AssetListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         asset = serializer.save(created_by=self.request.user)
-        logger.info("User %s created asset %s (guid=%s)", self.request.user.username, asset.name, asset.guid)
+        logger.info(
+            "User %s created asset %s (guid=%s)",
+            self.request.user.username,
+            asset.name,
+            asset.guid,
+        )
 
 
 class AssetDetailView(generics.RetrieveUpdateAPIView):
@@ -87,7 +94,11 @@ class AssetByGuidView(generics.RetrieveAPIView):
 @extend_schema(
     tags=["assets"],
     request=AssetDeleteRequest,
-    responses={200: AssetDeleteResponse, 404: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT},
+    responses={
+        200: AssetDeleteResponse,
+        404: OpenApiTypes.OBJECT,
+        400: OpenApiTypes.OBJECT,
+    },
 )
 class AssetDeleteView(APIView):
     permission_classes = [IsAdmin]
@@ -96,7 +107,9 @@ class AssetDeleteView(APIView):
         try:
             asset = Asset.objects.get(pk=pk)
         except Asset.DoesNotExist:
-            return Response({"detail": "Asset not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Asset not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         delete_reason = request.data.get("delete_reason", "")
         if not delete_reason:
@@ -112,7 +125,10 @@ class AssetDeleteView(APIView):
 
         logger.info(
             "Admin %s soft-deleted asset %s (pk=%s, reason=%s)",
-            request.user.username, asset.name, pk, delete_reason,
+            request.user.username,
+            asset.name,
+            pk,
+            delete_reason,
         )
         return Response({"detail": "Asset deleted."}, status=status.HTTP_200_OK)
 
@@ -128,27 +144,31 @@ class AssetExportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        qs = Asset.objects.select_related('created_by')
+        qs = Asset.objects.select_related("created_by")
 
-        include_deleted = request.query_params.get('include_deleted', '').lower() == 'true'
+        include_deleted = (
+            request.query_params.get("include_deleted", "").lower() == "true"
+        )
         if not include_deleted:
             qs = qs.filter(is_deleted=False)
 
-        asset_status = request.query_params.get('status')
+        asset_status = request.query_params.get("status")
         if asset_status:
             qs = qs.filter(status=asset_status.upper())
 
-        search = request.query_params.get('search')
+        search = request.query_params.get("search")
         if search:
             qs = qs.filter(name__icontains=search)
 
         from .export import export_assets_to_xlsx
 
         buffer = export_assets_to_xlsx(qs)
-        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
         response = HttpResponse(
             buffer.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response['Content-Disposition'] = f'attachment; filename="tagly_assets_{timestamp}.xlsx"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="tagly_assets_{timestamp}.xlsx"'
+        )
         return response
