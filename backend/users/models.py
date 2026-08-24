@@ -1,7 +1,6 @@
 import re
 
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -46,21 +45,15 @@ class User(AbstractUser):
     notification_enabled = models.BooleanField(default=True)
 
     appearance_font_color = models.CharField(
-        max_length=9,
-        blank=True,
-        default="",
+        max_length=9, blank=True, default="",
         help_text="Hex color for content text, e.g. #1a1a1a",
     )
     appearance_bg_color = models.CharField(
-        max_length=9,
-        blank=True,
-        default="",
+        max_length=9, blank=True, default="",
         help_text="Hex color for content background, e.g. #f5f5f5",
     )
     appearance_bg_image = models.ImageField(
-        upload_to="user_backgrounds/",
-        blank=True,
-        default="",
+        upload_to="user_backgrounds/", blank=True, default="",
         help_text="Custom background image for the content area.",
     )
     # 0 = image fully opaque; 100 = image fully transparent (background color shows through).
@@ -83,9 +76,7 @@ class User(AbstractUser):
         for field_name in ("appearance_font_color", "appearance_bg_color"):
             value = getattr(self, field_name, "")
             if value and not self._HEX_COLOR_RE.match(value):
-                raise ValidationError(
-                    {field_name: "Must be a valid hex color (e.g. #ff0000)."}
-                )
+                raise ValidationError({field_name: "Must be a valid hex color (e.g. #ff0000)."})
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"

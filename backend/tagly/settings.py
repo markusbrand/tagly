@@ -1,7 +1,7 @@
 import os
-import sys
 from pathlib import Path
 
+import sys
 from dotenv import load_dotenv
 
 # Load .env BEFORE anything else, but allow environment to override it.
@@ -104,12 +104,7 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
-        "CONN_MAX_AGE": int(
-            os.environ.get(
-                "DB_CONN_MAX_AGE",
-                "0" if _IS_TESTING or "sqlite" in _DB_ENGINE else "600",
-            )
-        ),
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", "0" if _IS_TESTING or "sqlite" in _DB_ENGINE else "600")),
     }
 }
 
@@ -118,9 +113,7 @@ DATABASES = {
 AUTH_USER_MODEL = "users.User"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -171,8 +164,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 25,
     # Per-scope rates for ScopedRateThrottle (see users.views.LoginView).
     "DEFAULT_THROTTLE_RATES": {
-        "login": os.environ.get("LOGIN_THROTTLE_RATE", "30/minute").strip()
-        or "30/minute",
+        "login": os.environ.get("LOGIN_THROTTLE_RATE", "30/minute").strip() or "30/minute",
     },
     "NUM_PROXIES": 1 if _env_bool("DJANGO_BEHIND_HTTPS_PROXY", False) else None,
 }
@@ -256,9 +248,7 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "DEFAULT_FROM_EMAIL", "noreply@tagly.brandstaetter.rocks"
-)
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@tagly.brandstaetter.rocks")
 
 # Logging
 

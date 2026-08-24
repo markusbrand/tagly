@@ -49,10 +49,11 @@ export default function AppearanceDialog({ open, onClose }: Props) {
 
   useEffect(() => {
     if (open && user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFontColor(user.appearance_font_color || '');
       setBgColor(user.appearance_bg_color || '');
       setPreviewUrl(user.appearance_bg_image || '');
-      setPendingFile(null);
+
       setImageTransparency(
         typeof user.appearance_bg_image_transparency === 'number'
           ? user.appearance_bg_image_transparency
@@ -70,7 +71,7 @@ export default function AppearanceDialog({ open, onClose }: Props) {
   }, []);
 
   const handleRemoveImage = useCallback(() => {
-    setPendingFile(null);
+
     setPreviewUrl('');
     setImageTransparency(50);
     if (fileRef.current) fileRef.current.value = '';
