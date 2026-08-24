@@ -30,17 +30,9 @@ class UserSerializer(AppearanceFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
-            "username",
-            "email",
-            "role",
-            "is_superuser",
-            "language",
-            "theme_preference",
-            "notification_enabled",
-            "appearance_font_color",
-            "appearance_bg_color",
-            "appearance_bg_image",
+            "id", "username", "email", "role", "is_superuser",
+            "language", "theme_preference", "notification_enabled",
+            "appearance_font_color", "appearance_bg_color", "appearance_bg_image",
             "appearance_bg_image_transparency",
         ]
         read_only_fields = ["id", "is_superuser"]
@@ -85,11 +77,8 @@ class UserPreferencesSerializer(AppearanceFieldsMixin, serializers.ModelSerializ
     class Meta:
         model = User
         fields = [
-            "language",
-            "theme_preference",
-            "notification_enabled",
-            "appearance_font_color",
-            "appearance_bg_color",
+            "language", "theme_preference", "notification_enabled",
+            "appearance_font_color", "appearance_bg_color",
             "appearance_bg_image_transparency",
         ]
 

@@ -313,16 +313,13 @@ export default function CustomFields() {
         </Table>
       </TableContainer>
 
-      <Tooltip title={t('admin.add_field', 'Add Field')}>
-        <Fab
-          color="primary"
-          onClick={openCreate}
-          sx={{ position: 'fixed', bottom: 24, right: 24 }}
-          aria-label={t('admin.add_field', 'Add Field')}
-        >
-          <AddIcon />
-        </Fab>
-      </Tooltip>
+      <Fab
+        color="primary"
+        onClick={openCreate}
+        sx={{ position: 'fixed', bottom: 24, right: 24 }}
+      >
+        <AddIcon />
+      </Fab>
 
       {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>

@@ -9,28 +9,8 @@ class UserAdmin(BaseUserAdmin):
     list_display = ("username", "email", "role", "language", "is_active")
     list_filter = ("role", "language", "is_active", "is_staff")
     fieldsets = BaseUserAdmin.fieldsets + (
-        (
-            "Tagly Settings",
-            {
-                "fields": (
-                    "role",
-                    "language",
-                    "theme_preference",
-                    "notification_enabled",
-                )
-            },
-        ),
+        ("Tagly Settings", {"fields": ("role", "language", "theme_preference", "notification_enabled")}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        (
-            "Tagly Settings",
-            {
-                "fields": (
-                    "role",
-                    "language",
-                    "theme_preference",
-                    "notification_enabled",
-                )
-            },
-        ),
+        ("Tagly Settings", {"fields": ("role", "language", "theme_preference", "notification_enabled")}),
     )

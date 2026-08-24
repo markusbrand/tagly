@@ -5,12 +5,8 @@ class StickerTemplate(models.Model):
     name = models.CharField(max_length=255)
     label_width_mm = models.FloatField()
     label_height_mm = models.FloatField()
-    h_pitch_mm = models.FloatField(
-        help_text="Horizontal distance from label start to next label start"
-    )
-    v_pitch_mm = models.FloatField(
-        help_text="Vertical distance from label start to next label start"
-    )
+    h_pitch_mm = models.FloatField(help_text="Horizontal distance from label start to next label start")
+    v_pitch_mm = models.FloatField(help_text="Vertical distance from label start to next label start")
     left_margin_mm = models.FloatField()
     top_margin_mm = models.FloatField()
     rows = models.PositiveIntegerField()

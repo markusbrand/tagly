@@ -53,9 +53,7 @@ class StickerTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         if serializer.validated_data.get("is_default"):
-            StickerTemplate.objects.filter(is_default=True).exclude(
-                pk=self.get_object().pk
-            ).update(is_default=False)
+            StickerTemplate.objects.filter(is_default=True).exclude(pk=self.get_object().pk).update(is_default=False)
         serializer.save()
 
     def perform_destroy(self, instance):
@@ -76,23 +74,16 @@ class GenerateStickersView(APIView):
         serializer = GenerateStickersSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        template = StickerTemplate.objects.get(
-            pk=serializer.validated_data["template_id"]
-        )
+        template = StickerTemplate.objects.get(pk=serializer.validated_data["template_id"])
         num_pages = serializer.validated_data["num_pages"]
 
         buffer, guids = generate_sticker_pdf(template, num_pages)
 
         logger.info(
             "User %s generated %d QR stickers (%d pages) using template '%s'",
-            request.user.username,
-            len(guids),
-            num_pages,
-            template.name,
+            request.user.username, len(guids), num_pages, template.name,
         )
 
         response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
-        response["Content-Disposition"] = (
-            f'attachment; filename="{_sticker_pdf_filename(template.name)}"'
-        )
+        response["Content-Disposition"] = f'attachment; filename="{_sticker_pdf_filename(template.name)}"'
         return response

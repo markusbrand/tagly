@@ -50,10 +50,7 @@ class TestValidateAssetCustomFieldsPayload:
         )
         fid = str(f.pk)
         assert "Minimum length" in validate_asset_custom_fields_payload({fid: "a"})[fid]
-        assert (
-            "Maximum length"
-            in validate_asset_custom_fields_payload({fid: "abcde"})[fid]
-        )
+        assert "Maximum length" in validate_asset_custom_fields_payload({fid: "abcde"})[fid]
         assert validate_asset_custom_fields_payload({fid: "ab"}) == {}
 
     def test_string_pattern(self):
@@ -70,9 +67,7 @@ class TestValidateAssetCustomFieldsPayload:
     def test_string_wrong_type(self):
         f = _asset_field(field_type=CustomFieldDefinition.FieldType.STRING)
         fid = str(f.pk)
-        assert (
-            validate_asset_custom_fields_payload({fid: 99})[fid] == "Expected a string."
-        )
+        assert validate_asset_custom_fields_payload({fid: 99})[fid] == "Expected a string."
 
     def test_date_empty_optional_skipped_valid_string_ok(self):
         f = _asset_field(
@@ -92,9 +87,7 @@ class TestValidateAssetCustomFieldsPayload:
             is_mandatory=True,
         )
         fid = str(f.pk)
-        assert (
-            validate_asset_custom_fields_payload({fid: ""})[fid] == '"Due" is required.'
-        )
+        assert validate_asset_custom_fields_payload({fid: ""})[fid] == '"Due" is required.'
 
     def test_number_integer_only_and_bounds(self):
         f = _asset_field(
@@ -102,10 +95,7 @@ class TestValidateAssetCustomFieldsPayload:
             validation_rules={"min": 1, "max": 10},
         )
         fid = str(f.pk)
-        assert (
-            validate_asset_custom_fields_payload({fid: 1.5})[fid]
-            == "Expected an integer."
-        )
+        assert validate_asset_custom_fields_payload({fid: 1.5})[fid] == "Expected an integer."
         assert validate_asset_custom_fields_payload({fid: 0})[fid] == "Must be >= 1."
         assert validate_asset_custom_fields_payload({fid: 11})[fid] == "Must be <= 10."
         assert validate_asset_custom_fields_payload({fid: 5}) == {}
@@ -119,12 +109,8 @@ class TestValidateAssetCustomFieldsPayload:
         assert validate_asset_custom_fields_payload({fid: "nope"})[fid] == (
             "Expected a decimal number."
         )
-        assert (
-            validate_asset_custom_fields_payload({fid: "0.1"})[fid] == "Must be >= 0.5."
-        )
-        assert (
-            validate_asset_custom_fields_payload({fid: "3"})[fid] == "Must be <= 2.5."
-        )
+        assert validate_asset_custom_fields_payload({fid: "0.1"})[fid] == "Must be >= 0.5."
+        assert validate_asset_custom_fields_payload({fid: "3"})[fid] == "Must be <= 2.5."
         assert validate_asset_custom_fields_payload({fid: "1.25"}) == {}
 
     def test_single_and_multi_select(self):
@@ -138,10 +124,7 @@ class TestValidateAssetCustomFieldsPayload:
             display_order=1,
         )
         sid, mid = str(single.pk), str(multi.pk)
-        assert (
-            validate_asset_custom_fields_payload({sid: "c"})[sid]
-            == "Select a valid option."
-        )
+        assert validate_asset_custom_fields_payload({sid: "c"})[sid] == "Select a valid option."
         assert validate_asset_custom_fields_payload({sid: "a", mid: ["x"]}) == {}
         assert validate_asset_custom_fields_payload({mid: ["z"]})[mid] == (
             "One or more selected values are not allowed."
@@ -165,10 +148,7 @@ class TestValidateAssetCustomFieldsPayload:
             is_mandatory=True,
         )
         fid = str(f.pk)
-        assert (
-            validate_asset_custom_fields_payload({fid: "x"})[fid]
-            == '"Tags" is required.'
-        )
+        assert validate_asset_custom_fields_payload({fid: "x"})[fid] == '"Tags" is required.'
 
 
 @pytest.mark.django_db

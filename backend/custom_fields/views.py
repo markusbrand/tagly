@@ -52,9 +52,7 @@ class CustomFieldDefinitionListCreateView(generics.ListCreateAPIView):
         instance = serializer.save()
         logger.info(
             "Custom field definition created: id=%d name='%s' entity_type=%s by user=%s",
-            instance.pk,
-            instance.name,
-            instance.entity_type,
+            instance.pk, instance.name, instance.entity_type,
             self.request.user.username,
         )
 
@@ -70,16 +68,11 @@ class CustomFieldDefinitionDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        values_count = CustomFieldValue.objects.filter(
-            field_definition=instance
-        ).count()
+        values_count = CustomFieldValue.objects.filter(field_definition=instance).count()
 
         logger.warning(
             "Deleting custom field definition id=%d name='%s': %d associated values will be removed. user=%s",
-            instance.pk,
-            instance.name,
-            values_count,
-            request.user.username,
+            instance.pk, instance.name, values_count, request.user.username,
         )
 
         self.perform_destroy(instance)
@@ -110,11 +103,7 @@ class CustomFieldValuesView(APIView):
     def _resolve_entity(self, entity_type_str, entity_id):
         model_class = ENTITY_TYPE_MODEL_MAP.get(entity_type_str.lower())
         if model_class is None:
-            return (
-                None,
-                None,
-                f"Unknown entity type: '{entity_type_str}'. Use 'asset' or 'customer'.",
-            )
+            return None, None, f"Unknown entity type: '{entity_type_str}'. Use 'asset' or 'customer'."
 
         try:
             entity = model_class.objects.get(pk=entity_id)
@@ -130,11 +119,13 @@ class CustomFieldValuesView(APIView):
             return Response({"detail": error}, status=status.HTTP_404_NOT_FOUND)
 
         field_values = CustomFieldValue.objects.filter(
-            content_type=ct,
-            object_id=entity.pk,
+            content_type=ct, object_id=entity.pk,
         ).select_related("field_definition")
 
-        result = {str(fv.field_definition_id): fv.value for fv in field_values}
+        result = {
+            str(fv.field_definition_id): fv.value
+            for fv in field_values
+        }
         return Response(result)
 
     def put(self, request, entity_type, entity_id):
@@ -159,16 +150,15 @@ class CustomFieldValuesView(APIView):
 
         logger.info(
             "Custom field values updated: entity_type=%s entity_id=%d fields=%s user=%s",
-            entity_type,
-            entity_id,
-            updated_ids,
-            request.user.username,
+            entity_type, entity_id, updated_ids, request.user.username,
         )
 
         field_values = CustomFieldValue.objects.filter(
-            content_type=ct,
-            object_id=entity.pk,
+            content_type=ct, object_id=entity.pk,
         ).select_related("field_definition")
 
-        result = {str(fv.field_definition_id): fv.value for fv in field_values}
+        result = {
+            str(fv.field_definition_id): fv.value
+            for fv in field_values
+        }
         return Response(result)
