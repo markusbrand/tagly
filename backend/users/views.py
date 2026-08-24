@@ -3,14 +3,14 @@ import logging
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, serializers, status
-from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.utils import get_client_ip
-
 from .permissions import IsAdmin, IsAuthenticated
+from .throttling import LoginIPThrottle
+from rest_framework.parsers import FormParser, MultiPartParser
+
 from .serializers import (
     BackgroundImageUploadSerializer,
     LoginSerializer,
@@ -19,7 +19,6 @@ from .serializers import (
     UserPreferencesSerializer,
     UserSerializer,
 )
-from .throttling import LoginIPThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ class LoginView(APIView):
             logger.warning(
                 "Failed login attempt for username=%s from IP=%s",
                 serializer.validated_data["username"],
-                get_client_ip(request),
+                request.META.get("REMOTE_ADDR"),
             )
             return Response(
                 {"detail": "Invalid credentials."},
@@ -73,9 +72,7 @@ class LoginView(APIView):
         return Response(UserSerializer(user, context={"request": request}).data)
 
 
-@extend_schema(
-    tags=["users"], request=None, responses={status.HTTP_204_NO_CONTENT: None}
-)
+@extend_schema(tags=["users"], request=None, responses={status.HTTP_204_NO_CONTENT: None})
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -106,11 +103,7 @@ class BackgroundImageView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    @extend_schema(
-        tags=["users"],
-        request=BackgroundImageUploadSerializer,
-        responses={200: UserSerializer},
-    )
+    @extend_schema(tags=["users"], request=BackgroundImageUploadSerializer, responses={200: UserSerializer})
     def post(self, request):
         if not request.FILES.get("image"):
             logger.warning(
@@ -133,18 +126,17 @@ class BackgroundImageView(APIView):
 
             user.appearance_bg_image = serializer.validated_data["image"]
             user.save(update_fields=["appearance_bg_image"])
-        except OSError:
+        except OSError as exc:
             logger.exception(
-                "Background image save failed for user=%s (media write/delete)",
+                "Background image save failed for user=%s (media write/delete): %s",
                 user.username,
+                exc,
             )
             return Response(
                 {
                     "image": [
-                        (
-                            "Server could not store the file. Check disk space and that the media "
-                            "directory is writable."
-                        ),
+                        "Server could not store the file. Check disk space and that the media "
+                        "directory is writable.",
                     ],
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -162,10 +154,11 @@ class BackgroundImageView(APIView):
             user.appearance_bg_image.delete(save=False)
             user.appearance_bg_image = ""
             user.save(update_fields=["appearance_bg_image"])
-        except OSError:
+        except OSError as exc:
             logger.exception(
-                "Background image delete failed for user=%s",
+                "Background image delete failed for user=%s: %s",
                 user.username,
+                exc,
             )
             return Response(
                 {"detail": "Could not remove the file from storage."},
@@ -186,9 +179,7 @@ class UserListView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        logger.info(
-            "Admin %s created user %s", self.request.user.username, user.username
-        )
+        logger.info("Admin %s created user %s", self.request.user.username, user.username)
 
 
 class UserDetailView(generics.RetrieveUpdateAPIView):

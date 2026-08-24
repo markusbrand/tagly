@@ -5,19 +5,7 @@ from . import views
 app_name = "custom_fields"
 
 urlpatterns = [
-    path(
-        "definitions/",
-        views.CustomFieldDefinitionListCreateView.as_view(),
-        name="definition-list",
-    ),
-    path(
-        "definitions/<int:pk>/",
-        views.CustomFieldDefinitionDetailView.as_view(),
-        name="definition-detail",
-    ),
-    path(
-        "values/<str:entity_type>/<int:entity_id>/",
-        views.CustomFieldValuesView.as_view(),
-        name="values",
-    ),
+    path("definitions/", views.CustomFieldDefinitionListCreateView.as_view(), name="definition-list"),
+    path("definitions/<int:pk>/", views.CustomFieldDefinitionDetailView.as_view(), name="definition-detail"),
+    path("values/<str:entity_type>/<int:entity_id>/", views.CustomFieldValuesView.as_view(), name="values"),
 ]

@@ -26,12 +26,7 @@
     "admin": "Admin",
     "settings": "Settings",
     "collapse_drawer": "Collapse sidebar",
-    "expand_drawer": "Expand sidebar",
-    "menu": "Menu",
-    "dark_mode": "Dark mode",
-    "light_mode": "Light mode",
-    "language": "Language",
-    "user_menu": "User menu"
+    "expand_drawer": "Expand sidebar"
   },
   "scanner": {
     "scan_qr": "Scan QR Code",

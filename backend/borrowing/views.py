@@ -10,7 +10,6 @@ from rest_framework.views import APIView
 
 from assets.models import Asset
 from audit.models import AuditLog
-from core.utils import get_client_ip
 from users.permissions import IsAuthenticated
 
 from .models import BorrowRecord
@@ -22,6 +21,13 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_client_ip(request):
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")
 
 
 @extend_schema(
@@ -60,15 +66,12 @@ class BorrowCreateView(APIView):
                 "customer_id": data["customer_id"],
                 "borrowed_from": str(borrow.borrowed_from),
             },
-            ip_address=get_client_ip(request),
+            ip_address=_get_client_ip(request),
         )
 
         logger.info(
             "Borrow created: record=%d asset=%d customer=%d user=%s",
-            borrow.pk,
-            asset.pk,
-            data["customer_id"],
-            request.user.username,
+            borrow.pk, asset.pk, data["customer_id"], request.user.username,
         )
 
         output = BorrowRecordSerializer(borrow).data
@@ -90,9 +93,7 @@ class BorrowReturnView(APIView):
     @transaction.atomic
     def post(self, request, pk):
         try:
-            borrow = BorrowRecord.objects.select_related(
-                "asset", "customer", "user"
-            ).get(pk=pk)
+            borrow = BorrowRecord.objects.select_related("asset", "customer", "user").get(pk=pk)
         except BorrowRecord.DoesNotExist:
             return Response(
                 {"detail": "Borrow record not found."},
@@ -112,7 +113,7 @@ class BorrowReturnView(APIView):
         old_status = borrow.status
         borrow.status = BorrowRecord.Status.RETURNED
         borrow.returned_at = data["returned_at"]
-        if data.get("notes"):
+        if "notes" in data and data["notes"]:
             borrow.notes = data["notes"]
         borrow.save(update_fields=["status", "returned_at", "notes"])
 
@@ -130,14 +131,12 @@ class BorrowReturnView(APIView):
                 "status": BorrowRecord.Status.RETURNED,
                 "returned_at": str(borrow.returned_at),
             },
-            ip_address=get_client_ip(request),
+            ip_address=_get_client_ip(request),
         )
 
         logger.info(
             "Borrow returned: record=%d asset=%d user=%s",
-            borrow.pk,
-            asset.pk,
-            request.user.username,
+            borrow.pk, asset.pk, request.user.username,
         )
 
         output = BorrowRecordSerializer(borrow).data

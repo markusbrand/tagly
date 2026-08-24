@@ -10,11 +10,7 @@ from rest_framework.views import APIView
 from users.permissions import IsAuthenticated
 
 from .models import Customer
-from .serializers import (
-    CountryRowSerializer,
-    CustomerListSerializer,
-    CustomerSerializer,
-)
+from .serializers import CountryRowSerializer, CustomerListSerializer, CustomerSerializer
 
 logger = logging.getLogger(__name__)
 

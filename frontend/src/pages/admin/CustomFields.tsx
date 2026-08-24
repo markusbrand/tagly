@@ -269,30 +269,22 @@ export default function CustomFields() {
                   </TableCell>
                   <TableCell>{field.display_order}</TableCell>
                   <TableCell align="right">
-                    <Tooltip title={t('admin.move_up', 'Move Up')}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          disabled={idx === 0}
-                          onClick={() => handleReorder(field, 'up')}
-                          aria-label={t('admin.move_up', 'Move Up')}
-                        >
-                          <ArrowUpward fontSize="small" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title={t('admin.move_down', 'Move Down')}>
-                      <span>
-                        <IconButton
-                          size="small"
-                          disabled={idx === fields.length - 1}
-                          onClick={() => handleReorder(field, 'down')}
-                          aria-label={t('admin.move_down', 'Move Down')}
-                        >
-                          <ArrowDownward fontSize="small" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
+                    <IconButton
+                      size="small"
+                      disabled={idx === 0}
+                      onClick={() => handleReorder(field, 'up')}
+                      aria-label="Move up"
+                    >
+                      <ArrowUpward fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      disabled={idx === fields.length - 1}
+                      onClick={() => handleReorder(field, 'down')}
+                      aria-label="Move down"
+                    >
+                      <ArrowDownward fontSize="small" />
+                    </IconButton>
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title={t('common.edit')}>
@@ -313,16 +305,14 @@ export default function CustomFields() {
         </Table>
       </TableContainer>
 
-      <Tooltip title={t('admin.add_field', 'Add Field')}>
-        <Fab
-          color="primary"
-          onClick={openCreate}
-          sx={{ position: 'fixed', bottom: 24, right: 24 }}
-          aria-label={t('admin.add_field', 'Add Field')}
-        >
-          <AddIcon />
-        </Fab>
-      </Tooltip>
+      <Fab
+        color="primary"
+        onClick={openCreate}
+        sx={{ position: 'fixed', bottom: 24, right: 24 }}
+        aria-label={t('admin.add_field')}
+      >
+        <AddIcon />
+      </Fab>
 
       {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>

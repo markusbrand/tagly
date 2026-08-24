@@ -11,9 +11,7 @@ class CustomFieldDefinitionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        entity_type = attrs.get(
-            "entity_type", getattr(self.instance, "entity_type", None)
-        )
+        entity_type = attrs.get("entity_type", getattr(self.instance, "entity_type", None))
         name = attrs.get("name", getattr(self.instance, "name", None))
 
         qs = CustomFieldDefinition.objects.filter(entity_type=entity_type, name=name)
@@ -21,9 +19,7 @@ class CustomFieldDefinitionSerializer(serializers.ModelSerializer):
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
             raise serializers.ValidationError(
-                {
-                    "name": f"A field with this name already exists for entity type '{entity_type}'."
-                }
+                {"name": f"A field with this name already exists for entity type '{entity_type}'."}
             )
 
         field_type = attrs.get("field_type", getattr(self.instance, "field_type", None))
@@ -31,15 +27,11 @@ class CustomFieldDefinitionSerializer(serializers.ModelSerializer):
             CustomFieldDefinition.FieldType.SINGLE_SELECT,
             CustomFieldDefinition.FieldType.MULTI_SELECT,
         ):
-            options = attrs.get(
-                "options", getattr(self.instance, "options", None) or {}
-            )
+            options = attrs.get("options", getattr(self.instance, "options", None) or {})
             choices = options.get("choices", [])
             if not isinstance(choices, list) or len(choices) == 0:
                 raise serializers.ValidationError(
-                    {
-                        "options": "options.choices must be a non-empty list for select fields."
-                    }
+                    {"options": "options.choices must be a non-empty list for select fields."}
                 )
 
         return attrs
@@ -98,15 +90,11 @@ class CustomFieldValueSerializer(serializers.Serializer):
 
         elif ft == CustomFieldDefinition.FieldType.DECIMAL:
             if not isinstance(value, (int, float)) or isinstance(value, bool):
-                raise serializers.ValidationError(
-                    {"value": "Expected a number (decimal)."}
-                )
+                raise serializers.ValidationError({"value": "Expected a number (decimal)."})
 
         elif ft == CustomFieldDefinition.FieldType.DATE:
             if not isinstance(value, str):
-                raise serializers.ValidationError(
-                    {"value": "Expected an ISO date string."}
-                )
+                raise serializers.ValidationError({"value": "Expected an ISO date string."})
             try:
                 if "T" in value:
                     datetime.fromisoformat(value)
@@ -125,9 +113,7 @@ class CustomFieldValueSerializer(serializers.Serializer):
         elif ft == CustomFieldDefinition.FieldType.MULTI_SELECT:
             choices = (field_def.options or {}).get("choices", [])
             if not isinstance(value, list):
-                raise serializers.ValidationError(
-                    {"value": "Expected a list of choices."}
-                )
+                raise serializers.ValidationError({"value": "Expected a list of choices."})
             invalid = [v for v in value if v not in choices]
             if invalid:
                 raise serializers.ValidationError(
@@ -144,9 +130,7 @@ class CustomFieldBulkValueSerializer(serializers.Serializer):
             try:
                 field_def = CustomFieldDefinition.objects.get(pk=int(field_def_id))
             except (CustomFieldDefinition.DoesNotExist, ValueError, TypeError):
-                errors[field_def_id] = (
-                    f"Field definition '{field_def_id}' does not exist."
-                )
+                errors[field_def_id] = f"Field definition '{field_def_id}' does not exist."
                 continue
 
             entry_serializer = CustomFieldValueSerializer(
