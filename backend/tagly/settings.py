@@ -174,6 +174,7 @@ REST_FRAMEWORK = {
         "login": os.environ.get("LOGIN_THROTTLE_RATE", "30/minute").strip()
         or "30/minute",
     },
+    "NUM_PROXIES": 1 if _env_bool("DJANGO_BEHIND_HTTPS_PROXY", False) else None,
 }
 
 SPECTACULAR_SETTINGS = {
@@ -231,6 +232,9 @@ if _BEHIND_HTTPS_PROXY:
 
 SESSION_COOKIE_SECURE = _env_bool("SESSION_COOKIE_SECURE", _BEHIND_HTTPS_PROXY)
 CSRF_COOKIE_SECURE = _env_bool("CSRF_COOKIE_SECURE", _BEHIND_HTTPS_PROXY)
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
 
 # Redis
 
