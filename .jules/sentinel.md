@@ -13,4 +13,8 @@
 **Learning:** Security-critical functions like retrieving user IP addresses should be centralized and consistently applied to prevent bypassing logs or throttling mechanisms when behind proxies.
 **Prevention:** Always use the centralized `get_client_ip` utility from `core/utils.py` across the application to ensure consistent IP handling. Future enhancements should consider robust proxy IP validation against trusted CIDR blocks (e.g. using `django-ipware`).
 
+## 2024-05-25 - Prevent CSV/Excel Macro Injection
+**Vulnerability:** User inputs exported to XLSX via xlsxwriter can execute macros if they start with '='.
+**Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
+**Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 

@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 def export_assets_to_xlsx(queryset, include_custom_fields=True):
     """Export a queryset of assets to an Excel file."""
     buffer = io.BytesIO()
-    workbook = xlsxwriter.Workbook(buffer, {"constant_memory": True})
+    workbook = xlsxwriter.Workbook(
+        buffer, {"constant_memory": True, "strings_to_formulas": False}
+    )
     worksheet = workbook.add_worksheet("Assets")
 
     header_format = workbook.add_format(
