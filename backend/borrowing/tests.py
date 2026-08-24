@@ -30,8 +30,12 @@ class TestBorrowingSharedStaffContract:
     def test_peer_can_list_active_borrow_created_by_other_user(
         self, authenticated_client, client_as_user_two, user, user_two
     ):
-        cust = Customer.objects.create(**{k: v for k, v in _customer_payload("A").items()})
-        asset_resp = authenticated_client.post("/api/v1/assets/", {"name": "Shared Borrow Asset"})
+        cust = Customer.objects.create(
+            **{k: v for k, v in _customer_payload("A").items()}
+        )
+        asset_resp = authenticated_client.post(
+            "/api/v1/assets/", {"name": "Shared Borrow Asset"}
+        )
         assert asset_resp.status_code == 201
         asset_id = asset_resp.data["id"]
 
@@ -51,8 +55,12 @@ class TestBorrowingSharedStaffContract:
     def test_peer_can_return_active_borrow_created_by_other_user(
         self, authenticated_client, client_as_user_two, user, user_two
     ):
-        cust = Customer.objects.create(**{k: v for k, v in _customer_payload("B").items()})
-        asset_resp = authenticated_client.post("/api/v1/assets/", {"name": "Return Shared Asset"})
+        cust = Customer.objects.create(
+            **{k: v for k, v in _customer_payload("B").items()}
+        )
+        asset_resp = authenticated_client.post(
+            "/api/v1/assets/", {"name": "Return Shared Asset"}
+        )
         assert asset_resp.status_code == 201
         asset_id = asset_resp.data["id"]
 
@@ -64,7 +72,9 @@ class TestBorrowingSharedStaffContract:
         assert borrow_resp.status_code == 201
         borrow_id = borrow_resp.data["id"]
 
-        ret = client_as_user_two.post(f"/api/v1/borrowing/{borrow_id}/return/", {}, format="json")
+        ret = client_as_user_two.post(
+            f"/api/v1/borrowing/{borrow_id}/return/", {}, format="json"
+        )
         assert ret.status_code == 200
         assert ret.data["status"] == BorrowRecord.Status.RETURNED
 
@@ -74,8 +84,12 @@ class TestBorrowingSharedStaffContract:
     def test_peer_can_read_borrow_detail_and_asset_history(
         self, authenticated_client, client_as_user_two, user, user_two
     ):
-        cust = Customer.objects.create(**{k: v for k, v in _customer_payload("C").items()})
-        asset_resp = authenticated_client.post("/api/v1/assets/", {"name": "History Asset"})
+        cust = Customer.objects.create(
+            **{k: v for k, v in _customer_payload("C").items()}
+        )
+        asset_resp = authenticated_client.post(
+            "/api/v1/assets/", {"name": "History Asset"}
+        )
         assert asset_resp.status_code == 201
         asset_id = asset_resp.data["id"]
 

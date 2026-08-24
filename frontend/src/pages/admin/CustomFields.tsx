@@ -269,29 +269,39 @@ export default function CustomFields() {
                   </TableCell>
                   <TableCell>{field.display_order}</TableCell>
                   <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      disabled={idx === 0}
-                      onClick={() => handleReorder(field, 'up')}
-                    >
-                      <ArrowUpward fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      disabled={idx === fields.length - 1}
-                      onClick={() => handleReorder(field, 'down')}
-                    >
-                      <ArrowDownward fontSize="small" />
-                    </IconButton>
+                    <Tooltip title={t('admin.move_up', 'Move Up')}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          disabled={idx === 0}
+                          onClick={() => handleReorder(field, 'up')}
+                          aria-label={t('admin.move_up', 'Move Up')}
+                        >
+                          <ArrowUpward fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={t('admin.move_down', 'Move Down')}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          disabled={idx === fields.length - 1}
+                          onClick={() => handleReorder(field, 'down')}
+                          aria-label={t('admin.move_down', 'Move Down')}
+                        >
+                          <ArrowDownward fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title={t('common.edit')}>
-                      <IconButton size="small" onClick={() => openEdit(field)}>
+                      <IconButton size="small" onClick={() => openEdit(field)} aria-label={t('common.edit')}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('common.delete')}>
-                      <IconButton size="small" color="error" onClick={() => confirmDelete(field)}>
+                      <IconButton size="small" color="error" onClick={() => confirmDelete(field)} aria-label={t('common.delete')}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -303,13 +313,16 @@ export default function CustomFields() {
         </Table>
       </TableContainer>
 
-      <Fab
-        color="primary"
-        onClick={openCreate}
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-      >
-        <AddIcon />
-      </Fab>
+      <Tooltip title={t('admin.add_field', 'Add Field')}>
+        <Fab
+          color="primary"
+          onClick={openCreate}
+          sx={{ position: 'fixed', bottom: 24, right: 24 }}
+          aria-label={t('admin.add_field', 'Add Field')}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
 
       {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>

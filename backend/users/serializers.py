@@ -1,4 +1,5 @@
 import re
+import typing
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -30,9 +31,17 @@ class UserSerializer(AppearanceFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id", "username", "email", "role", "is_superuser",
-            "language", "theme_preference", "notification_enabled",
-            "appearance_font_color", "appearance_bg_color", "appearance_bg_image",
+            "id",
+            "username",
+            "email",
+            "role",
+            "is_superuser",
+            "language",
+            "theme_preference",
+            "notification_enabled",
+            "appearance_font_color",
+            "appearance_bg_color",
+            "appearance_bg_image",
             "appearance_bg_image_transparency",
         ]
         read_only_fields = ["id", "is_superuser"]
@@ -77,8 +86,11 @@ class UserPreferencesSerializer(AppearanceFieldsMixin, serializers.ModelSerializ
     class Meta:
         model = User
         fields = [
-            "language", "theme_preference", "notification_enabled",
-            "appearance_font_color", "appearance_bg_color",
+            "language",
+            "theme_preference",
+            "notification_enabled",
+            "appearance_font_color",
+            "appearance_bg_color",
             "appearance_bg_image_transparency",
         ]
 
@@ -93,7 +105,7 @@ class BackgroundImageUploadSerializer(serializers.Serializer):
 
     MAX_SIZE = 5 * 1024 * 1024  # 5 MB
     # MPO = multi-picture JPEG container; many phones report it as JPEG bytes but Pillow uses format "MPO".
-    ALLOWED_PILLOW = {"JPEG", "PNG", "WEBP", "MPO"}
+    ALLOWED_PILLOW: typing.ClassVar[set[str]] = {"JPEG", "PNG", "WEBP", "MPO"}
 
     def validate_image(self, value):
         if value.size > self.MAX_SIZE:

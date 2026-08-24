@@ -18,8 +18,12 @@ class BorrowRecordSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = BorrowRecord
         fields = [
-            "id", "customer_name", "borrowed_from",
-            "borrowed_until", "returned_at", "status",
+            "id",
+            "customer_name",
+            "borrowed_from",
+            "borrowed_until",
+            "returned_at",
+            "status",
         ]
 
     @extend_schema_field(serializers.CharField())
@@ -30,7 +34,9 @@ class BorrowRecordSummarySerializer(serializers.ModelSerializer):
 class CustomFieldValueSerializer(serializers.Serializer):
     field_id = serializers.IntegerField(source="field_definition_id")
     field_name = serializers.CharField(source="field_definition.name", read_only=True)
-    field_type = serializers.CharField(source="field_definition.field_type", read_only=True)
+    field_type = serializers.CharField(
+        source="field_definition.field_type", read_only=True
+    )
     value = serializers.JSONField()
 
 
@@ -45,8 +51,14 @@ class AssetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
         fields = [
-            "id", "guid", "name", "status",
-            "created_at", "updated_at", "is_deleted", "created_by",
+            "id",
+            "guid",
+            "name",
+            "status",
+            "created_at",
+            "updated_at",
+            "is_deleted",
+            "created_by",
         ]
         read_only_fields = fields
 
@@ -59,10 +71,17 @@ class AssetDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
         fields = [
-            "id", "guid", "name", "status",
-            "created_at", "updated_at", "is_deleted",
-            "delete_reason", "created_by",
-            "borrow_records", "custom_field_values",
+            "id",
+            "guid",
+            "name",
+            "status",
+            "created_at",
+            "updated_at",
+            "is_deleted",
+            "delete_reason",
+            "created_by",
+            "borrow_records",
+            "custom_field_values",
         ]
         read_only_fields = fields
 
@@ -111,7 +130,9 @@ class AssetCreateSerializer(serializers.ModelSerializer):
         attrs["name"] = name
 
         cf = attrs.get("custom_fields")
-        errs = validate_asset_custom_fields_for_asset_create(cf if cf is not None else {})
+        errs = validate_asset_custom_fields_for_asset_create(
+            cf if cf is not None else {}
+        )
         if errs:
             raise serializers.ValidationError({"custom_fields": errs})
         return attrs

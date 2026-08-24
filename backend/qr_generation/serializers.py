@@ -30,7 +30,9 @@ class StickerTemplateSerializer(serializers.ModelSerializer):
 
     def validate_h_pitch_mm(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Horizontal pitch must be greater than 0.")
+            raise serializers.ValidationError(
+                "Horizontal pitch must be greater than 0."
+            )
         return value
 
     def validate_v_pitch_mm(self, value):
