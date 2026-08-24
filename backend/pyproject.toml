@@ -5,4 +5,6 @@ extend-exclude = ["**/migrations/*"]
 ignore = [
     "RUF012",
     "BLE001",
+    "RUF100",
+    "F403",
 ]
