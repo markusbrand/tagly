@@ -30,13 +30,19 @@ class Command(BaseCommand):
             # NotificationLog rows CASCADE when BorrowRecord is deleted.
             n_br = BorrowRecord.objects.filter(asset_id__in=asset_ids).delete()[0]
 
-            CustomFieldValue.objects.filter(content_type=ct_asset, object_id__in=asset_ids).delete()
+            CustomFieldValue.objects.filter(
+                content_type=ct_asset, object_id__in=asset_ids
+            ).delete()
             n_assets = asset_qs.delete()[0]
 
-            CustomFieldValue.objects.filter(content_type=ct_cust, object_id__in=cust_ids).delete()
+            CustomFieldValue.objects.filter(
+                content_type=ct_cust, object_id__in=cust_ids
+            ).delete()
             n_cust = cust_qs.delete()[0]
 
-            n_defs = CustomFieldDefinition.objects.filter(name__startswith=PREFIX).delete()[0]
+            n_defs = CustomFieldDefinition.objects.filter(
+                name__startswith=PREFIX
+            ).delete()[0]
 
             n_tpl = StickerTemplate.objects.filter(name__startswith=PREFIX).delete()[0]
 

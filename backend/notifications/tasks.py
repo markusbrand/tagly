@@ -20,7 +20,7 @@ def check_overdue_borrows(self):
             status=BorrowRecord.Status.ACTIVE,
             borrowed_until__lt=now,
             returned_at__isnull=True,
-        ).select_related('asset', 'customer', 'user')
+        ).select_related("asset", "customer", "user")
     )
 
     if not overdue_records:
@@ -33,7 +33,7 @@ def check_overdue_borrows(self):
             notification_type=NotificationLog.NotificationType.OVERDUE,
             status=NotificationLog.Status.SENT,
             sent_at__date=now.date(),
-        ).values_list('borrow_record_id', flat=True)
+        ).values_list("borrow_record_id", flat=True)
     )
 
     notified_count = 0
@@ -45,7 +45,8 @@ def check_overdue_borrows(self):
 
     logger.info(
         "Overdue check completed. %d overdue records, %d newly notified.",
-        len(overdue_records), notified_count,
+        len(overdue_records),
+        notified_count,
     )
 
 
@@ -54,12 +55,12 @@ def _send_overdue_notification(record):
     subject = f"Overdue Asset: {record.asset.name}"
 
     context = {
-        'asset_name': record.asset.name,
-        'asset_guid': str(record.asset.guid),
-        'customer_name': f"{record.customer.first_name} {record.customer.last_name}",
-        'borrowed_from': record.borrowed_from,
-        'borrowed_until': record.borrowed_until,
-        'days_overdue': (timezone.now() - record.borrowed_until).days,
+        "asset_name": record.asset.name,
+        "asset_guid": str(record.asset.guid),
+        "customer_name": f"{record.customer.first_name} {record.customer.last_name}",
+        "borrowed_from": record.borrowed_from,
+        "borrowed_until": record.borrowed_until,
+        "days_overdue": (timezone.now() - record.borrowed_until).days,
     }
 
     message = (
@@ -93,7 +94,11 @@ def _send_and_log(subject, message, record, recipient_email):
             recipient_email=recipient_email,
             status=NotificationLog.Status.SENT,
         )
-        logger.info("Sent overdue notification to %s for asset %s", recipient_email, record.asset.name)
+        logger.info(
+            "Sent overdue notification to %s for asset %s",
+            recipient_email,
+            record.asset.name,
+        )
     except Exception as e:
         NotificationLog.objects.create(
             borrow_record=record,
@@ -102,4 +107,6 @@ def _send_and_log(subject, message, record, recipient_email):
             status=NotificationLog.Status.FAILED,
             error_message=str(e),
         )
-        logger.error("Failed to send overdue notification to %s: %s", recipient_email, e)
+        logger.error(
+            "Failed to send overdue notification to %s: %s", recipient_email, e
+        )
