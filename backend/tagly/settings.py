@@ -181,7 +181,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Tagly API",
     "DESCRIPTION": "REST API for asset tracking, lending, QR stickers, custom fields, and administration.",
     # x-release-please-start-version
-    "VERSION": "1.1.0",
+    "VERSION": "1.2.0",
     # x-release-please-end
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1",
