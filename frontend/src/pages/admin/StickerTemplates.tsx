@@ -17,6 +17,7 @@ import {
   Skeleton,
   Switch,
   TextField,
+  Tooltip,
   Typography,
   Tooltip,
 } from '@mui/material';
@@ -206,12 +207,12 @@ export default function StickerTemplates() {
         </Grid>
       )}
 
-      <Tooltip title={t('admin.add_template', 'Add Template')}>
+      <Tooltip title={t('admin.add_template')}>
         <Fab
           color="primary"
           onClick={openCreate}
           sx={{ position: 'fixed', bottom: 24, right: 24 }}
-          aria-label={t('admin.add_template', 'Add Template')}
+          aria-label={t('admin.add_template')}
         >
           <AddIcon />
         </Fab>
