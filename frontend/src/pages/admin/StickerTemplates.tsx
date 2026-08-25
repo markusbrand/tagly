@@ -17,6 +17,7 @@ import {
   Skeleton,
   Switch,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Star } from '@mui/icons-material';
@@ -205,13 +206,16 @@ export default function StickerTemplates() {
         </Grid>
       )}
 
-      <Fab
-        color="primary"
-        onClick={openCreate}
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-      >
-        <AddIcon />
-      </Fab>
+      <Tooltip title={t('admin.add_template')}>
+        <Fab
+          color="primary"
+          onClick={openCreate}
+          sx={{ position: 'fixed', bottom: 24, right: 24 }}
+          aria-label={t('admin.add_template')}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
 
       {/* Create / Edit dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
