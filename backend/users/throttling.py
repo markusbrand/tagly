@@ -7,6 +7,8 @@ ScopedRateThrottle uses a class-level snapshot of api_settings that ignores over
 from django.conf import settings
 from rest_framework.throttling import SimpleRateThrottle
 
+from core.utils import get_client_ip
+
 
 class LoginIPThrottle(SimpleRateThrottle):
     """Limit POST /login/ by client IP (unauthenticated requests only on this view)."""
@@ -16,6 +18,9 @@ class LoginIPThrottle(SimpleRateThrottle):
     def get_rate(self):
         rates = settings.REST_FRAMEWORK.get("DEFAULT_THROTTLE_RATES") or {}
         return rates.get("login") or "30/minute"
+
+    def get_ident(self, request):
+        return get_client_ip(request)
 
     def get_cache_key(self, request, view):
         return self.cache_format % {
