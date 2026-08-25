@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/markusbrand/tagly/compare/tagly-v1.1.0...tagly-v1.2.0) (2026-08-25)
+
+
+### Features
+
+* **a11y:** add aria-label and tooltip to Add Template FAB ([c6c48a8](https://github.com/markusbrand/tagly/commit/c6c48a8b9fced2f7c2f0f4faa797b785d24a0b04))
+
 ## [1.1.0](https://github.com/markusbrand/tagly/compare/tagly-v1.0.0...tagly-v1.1.0) (2026-08-24)
 
 
