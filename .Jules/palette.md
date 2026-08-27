@@ -22,3 +22,7 @@
 ## 2026-08-25 - Missing ARIA Labels on Icon-only FAB Buttons
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `StickerTemplates.tsx` that lacked both a tooltip and an `aria-label` attribute, relying solely on its visual appearance which is inaccessible for screen readers and confusing for users without context.
 **Action:** Consistently apply `aria-label` and `Tooltip` to all `<Fab>` components containing only an icon, utilizing the existing i18n translation functions (e.g., `t('admin.add_template', 'Add Template')`).
+
+## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
+**Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
+**Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
