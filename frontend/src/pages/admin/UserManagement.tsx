@@ -174,14 +174,16 @@ export default function UserManagement() {
         </Table>
       </TableContainer>
 
-      <Fab
-        color="primary"
-        onClick={() => setCreateOpen(true)}
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-        aria-label={t('admin.add_user')}
-      >
-        <AddIcon />
-      </Fab>
+      <Tooltip title={t('admin.add_user')}>
+        <Fab
+          color="primary"
+          onClick={() => setCreateOpen(true)}
+          sx={{ position: 'fixed', bottom: 24, right: 24 }}
+          aria-label={t('admin.add_user')}
+        >
+          <AddIcon />
+        </Fab>
+      </Tooltip>
 
       {/* Create user dialog */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
