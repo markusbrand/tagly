@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/markusbrand/tagly/compare/tagly-v1.2.0...tagly-v1.3.0) (2026-09-02)
+
+
+### Features
+
+* add missing tooltip to Add User FAB ([0d5ca6b](https://github.com/markusbrand/tagly/commit/0d5ca6b2ab864b2a651a348b5dc8a65106dd4103))
+* **ui:** Add Tooltip to Add User Fab ([3f1728a](https://github.com/markusbrand/tagly/commit/3f1728a54fc31db202d9f4f81f887abb206cc0fa))
+
 ## [1.2.0](https://github.com/markusbrand/tagly/compare/tagly-v1.1.0...tagly-v1.2.0) (2026-08-25)
 
 
