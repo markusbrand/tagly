@@ -1,3 +1,3 @@
-## 2024-05-24 - [Floating Action Button Missing Tooltips and Labels]
-**Learning:** Found an accessibility issue pattern where `Fab` components were missing `aria-label` attributes and tooltip descriptions, making them unfriendly to screen readers and potentially confusing to visually abled users when it's just an icon without a label.
-**Action:** Always wrap `Fab` (and other icon-only components) in a `Tooltip` and provide a descriptive `aria-label`.
+## 2026-09-04 - Visual Loading States for Admin Actions
+**Learning:** Adding `startIcon={<CircularProgress size={20} color="inherit" />}` to MUI `Button`s during async actions (like Save or Delete) provides immediate, non-disruptive feedback. The `color="inherit"` property ensures it matches the disabled text color perfectly.
+**Action:** Use this pattern for all async action buttons across the application to prevent multiple submissions and improve perceived performance.
