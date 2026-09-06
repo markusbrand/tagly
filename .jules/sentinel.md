@@ -18,3 +18,7 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+## 2024-05-18 - Missing Authentication on QR Template Endpoints
+**Vulnerability:** Unauthenticated access to GET endpoints for Sticker Templates.
+**Learning:** Overriding DRF's `get_permissions` completely bypasses `DEFAULT_PERMISSION_CLASSES`. By returning `[]` for GET methods, the view was inadvertently exposed as `AllowAny`.
+**Prevention:** Always ensure a fallback to `[IsAuthenticated()]` or `super().get_permissions()` when overriding `get_permissions()` for role-specific access controls.
