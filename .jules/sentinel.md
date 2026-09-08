@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2024-05-18 - Missing Authentication due to get_permissions() override
+**Vulnerability:** Empty list returned in `get_permissions()` fallback for `StickerTemplateListCreateView` and `StickerTemplateDetailView`, resulting in unauthenticated access to GET endpoints.
+**Learning:** Overriding `get_permissions()` in Django REST Framework and returning `[]` explicitly overrides the default authentication classes, exposing endpoints without authentication when admin privileges are not required.
+**Prevention:** When overriding `get_permissions()`, always explicitly return `[IsAuthenticated()]` or call `super().get_permissions()` as a fallback instead of returning an empty list to prevent inadvertently exposing unauthenticated endpoints.
