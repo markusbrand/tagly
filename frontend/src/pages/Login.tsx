@@ -125,8 +125,9 @@ export default function Login() {
               fullWidth
               disabled={isSubmitting}
               sx={{ mt: 1 }}
+              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : undefined}
             >
-              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('auth.login_button')}
+              {t('auth.login_button')}
             </Button>
           </Box>
         </CardContent>

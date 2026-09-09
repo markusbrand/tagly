@@ -454,8 +454,9 @@ export default function AssetBorrow() {
               size="large"
               fullWidth
               disabled={isSubmitting || !form.first_name || !form.last_name || !borrowedUntil}
+              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : undefined}
             >
-              {isSubmitting ? <CircularProgress size={24} color="inherit" /> : t('borrowing.confirm')}
+              {t('borrowing.confirm')}
             </Button>
           </Box>
         </CardContent>
