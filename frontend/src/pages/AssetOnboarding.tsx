@@ -296,12 +296,9 @@ export default function AssetOnboarding() {
                   fullWidth
                   disabled={isSubmitting || !canSubmit}
                   sx={{ mt: 1 }}
+                  startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : undefined}
                 >
-                  {isSubmitting ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    t('onboarding.save')
-                  )}
+                  {t('onboarding.save')}
                 </Button>
               )}
 
