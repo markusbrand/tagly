@@ -4,7 +4,7 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
+  Chip, CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -429,6 +429,7 @@ export default function CustomFields() {
             variant="contained"
             onClick={handleSave}
             disabled={saving || !form.name.trim()}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.save')}
           </Button>
@@ -448,6 +449,7 @@ export default function CustomFields() {
             color="error"
             onClick={handleDelete}
             disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.delete')}
           </Button>
