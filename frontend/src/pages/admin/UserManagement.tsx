@@ -4,7 +4,7 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
+  Chip, CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -245,6 +245,7 @@ export default function UserManagement() {
             variant="contained"
             onClick={handleCreate}
             disabled={creating || !createForm.username || !createForm.email || !createForm.password}
+            startIcon={creating ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.save')}
           </Button>
@@ -284,7 +285,7 @@ export default function UserManagement() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>{t('common.cancel')}</Button>
-          <Button variant="contained" onClick={handleEdit} disabled={saving}>
+          <Button variant="contained" onClick={handleEdit} disabled={saving} startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}>
             {t('common.save')}
           </Button>
         </DialogActions>
