@@ -19,6 +19,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Star } from '@mui/icons-material';
 import {
@@ -279,6 +280,7 @@ export default function StickerTemplates() {
             color="error"
             onClick={handleDelete}
             disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.delete')}
           </Button>
