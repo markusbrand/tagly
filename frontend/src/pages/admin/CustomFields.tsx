@@ -27,6 +27,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -448,6 +449,7 @@ export default function CustomFields() {
             color="error"
             onClick={handleDelete}
             disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.delete')}
           </Button>
