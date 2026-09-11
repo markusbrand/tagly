@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2025-02-14 - Fix Overridden get_permissions Exposing Endpoints
+**Vulnerability:** Unauthenticated access to QR sticker template endpoints.
+**Learning:** When overriding `get_permissions()` in Django REST Framework views, returning an empty list `[]` as a fallback un-does the `DEFAULT_PERMISSION_CLASSES` configured in settings, thereby exposing endpoints unauthenticated (like GET endpoints in this case).
+**Prevention:** Explicitly return `[IsAuthenticated()]` or call `super().get_permissions()` as a fallback when conditionally returning permission classes.
