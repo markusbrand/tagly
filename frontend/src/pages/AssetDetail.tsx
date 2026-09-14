@@ -249,8 +249,9 @@ export default function AssetDetail() {
             color="error"
             variant="contained"
             disabled={isDeleting || !deleteReason.trim()}
+            startIcon={isDeleting ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
-            {isDeleting ? <CircularProgress size={20} color="inherit" /> : t('common.delete')}
+            {t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>
