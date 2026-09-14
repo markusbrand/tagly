@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2025-02-14 - Empty `get_permissions` Fallback Exposes Endpoints
+**Vulnerability:** Unauthenticated Access / Authorization Bypass
+**Learning:** Overriding `get_permissions` in DRF views and returning an empty list `[]` as a fallback inadvertently bypasses the project's default security configuration (`DEFAULT_PERMISSION_CLASSES`), exposing the endpoint to unauthenticated users.
+**Prevention:** When overriding `get_permissions()`, always explicitly return `[IsAuthenticated()]` (or call `super().get_permissions()`) as a fallback to ensure endpoints remain protected by default.
