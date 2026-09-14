@@ -223,13 +223,10 @@ export default function AssetReturn() {
                 variant="contained"
                 color="primary"
                 disabled={isSubmitting}
+                startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : undefined}
                 sx={{ flex: 1 }}
               >
-                {isSubmitting ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  t('returning.confirm')
-                )}
+                {t('returning.confirm')}
               </Button>
             </Box>
           </Box>
