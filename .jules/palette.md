@@ -1,3 +1,3 @@
-## 2024-05-24 - [Floating Action Button Missing Tooltips and Labels]
-**Learning:** Found an accessibility issue pattern where `Fab` components were missing `aria-label` attributes and tooltip descriptions, making them unfriendly to screen readers and potentially confusing to visually abled users when it's just an icon without a label.
-**Action:** Always wrap `Fab` (and other icon-only components) in a `Tooltip` and provide a descriptive `aria-label`.
+## 2024-09-16 - Add loading state to async action buttons
+**Learning:** For Material UI async action buttons (like Save or Create), the interface feels unresponsive if they disable without a visual cue while waiting for backend operations (e.g., creating a new user).
+**Action:** Always indicate the loading state visually by passing `<CircularProgress size={20} color="inherit" />` to the `startIcon` property of the `Button` when disabling it during an async operation.
