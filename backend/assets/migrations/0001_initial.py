@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -17,23 +16,72 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Asset',
+            name="Asset",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('guid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-                ('name', models.CharField(max_length=255)),
-                ('status', models.CharField(choices=[('AVAILABLE', 'Available'), ('BORROWED', 'Borrowed'), ('DELETED', 'Deleted')], default='AVAILABLE', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('delete_reason', models.CharField(blank=True, choices=[('lost', 'Lost'), ('damaged', 'Damaged'), ('retired', 'Retired')], max_length=20, null=True)),
-                ('is_deleted', models.BooleanField(default=False)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_assets', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "guid",
+                    models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("AVAILABLE", "Available"),
+                            ("BORROWED", "Borrowed"),
+                            ("DELETED", "Deleted"),
+                        ],
+                        default="AVAILABLE",
+                        max_length=20,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "delete_reason",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("lost", "Lost"),
+                            ("damaged", "Damaged"),
+                            ("retired", "Retired"),
+                        ],
+                        max_length=20,
+                        null=True,
+                    ),
+                ),
+                ("is_deleted", models.BooleanField(default=False)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="created_assets",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'asset',
-                'verbose_name_plural': 'assets',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['status'], name='idx_asset_status'), models.Index(fields=['is_deleted'], name='idx_asset_is_deleted'), models.Index(fields=['name'], name='idx_asset_name'), models.Index(fields=['status', 'is_deleted'], name='idx_asset_status_deleted'), models.Index(fields=['-created_at'], name='idx_asset_created_at')],
+                "verbose_name": "asset",
+                "verbose_name_plural": "assets",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(fields=["status"], name="idx_asset_status"),
+                    models.Index(fields=["is_deleted"], name="idx_asset_is_deleted"),
+                    models.Index(fields=["name"], name="idx_asset_name"),
+                    models.Index(
+                        fields=["status", "is_deleted"], name="idx_asset_status_deleted"
+                    ),
+                    models.Index(fields=["-created_at"], name="idx_asset_created_at"),
+                ],
             },
         ),
     ]
