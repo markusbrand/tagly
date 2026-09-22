@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2025-02-14 - Authorization Bypass in DRF Views
+**Vulnerability:** Endpoints unintentionally exposed as unauthenticated due to returning `[]` in `get_permissions()` overrides.
+**Learning:** When overriding `get_permissions()` in Django REST Framework views, returning an empty list `[]` bypasses any global default permission classes (like `DEFAULT_PERMISSION_CLASSES`), making the endpoint accessible to unauthenticated users.
+**Prevention:** Explicitly return fallback permissions like `[IsAuthenticated()]` or call `super().get_permissions()` instead of returning an empty list `[]`.
