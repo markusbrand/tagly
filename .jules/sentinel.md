@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2026-09-23 - Fix Authorization Bypass in QR Generation API
+**Vulnerability:** Endpoints using `[]` as fallback for `get_permissions()` exposed endpoints unauthenticated, bypassing `DEFAULT_PERMISSION_CLASSES`.
+**Learning:** In Django Rest Framework, explicitly return `[IsAuthenticated()]` or call `super().get_permissions()` instead of an empty list `[]` to maintain default authentication requirements.
+**Prevention:** Always verify custom `get_permissions()` methods do not unintentionally override `DEFAULT_PERMISSION_CLASSES` with empty lists.
