@@ -18,3 +18,7 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+## 2025-02-14 - Missing Authentication on API Endpoints
+**Vulnerability:** Unauthenticated API access due to missing fallback permissions in overridden `get_permissions()` methods.
+**Learning:** Overriding `get_permissions()` in Django REST Framework without returning a fallback for unhandled HTTP methods implicitly returns `[]`, wiping out `DEFAULT_PERMISSION_CLASSES` and exposing endpoints publicly.
+**Prevention:** Always return `[IsAuthenticated()]` or call `super().get_permissions()` as a fallback in overridden `get_permissions()` methods.
