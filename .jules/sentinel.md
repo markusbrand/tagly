@@ -18,3 +18,7 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+## 2024-10-01 - Fix broken authentication in GET endpoints
+**Vulnerability:** The `qr_generation` API endpoints for sticker templates were returning an empty list `[]` for GET requests in their overridden `get_permissions()` methods. This inadvertently allowed unauthenticated access to these endpoints, bypassing the default DRF permissions (`IsAuthenticated`).
+**Learning:** In Django REST Framework, when overriding `get_permissions()`, returning `[]` entirely removes authentication requirements for that method branch. To fallback to the default behavior (or enforce authentication for GET methods), it's crucial to return `[IsAuthenticated()]` or call `super().get_permissions()`.
+**Prevention:** Always be explicit with permissions in `get_permissions()`. Never return `[]` unless an endpoint is specifically meant to be public to unauthorized users. When overriding, ensure the fallback path either explicitly lists `[IsAuthenticated()]` or uses the superclass method to inherit defaults.
