@@ -18,3 +18,7 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+## 2024-05-24 - [Avoid Unintended Formatting in Migrations]
+**Vulnerability:** Running formatters (like `ruff format .`) without proper exclusions format auto-generated Django migration files.
+**Learning:** This introduces hundreds of lines of unrelated formatting noise to PRs, polluting git history and violating length boundaries, while distracting from the actual security fix.
+**Prevention:** Avoid formatting auto-generated Django migration files (e.g., `backend/*/migrations/*.py`). Always run `git status` after formatting to ensure only intended files were modified. Use `git checkout -f HEAD -- path/to/file` to revert unintentional changes.
