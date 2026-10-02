@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2025-02-14 - Fix Missing Auth in DRF Endpoints
+**Vulnerability:** Missing Authentication in DRF endpoints exposing sticker templates
+**Learning:** Overriding `get_permissions()` in Django REST Framework views and returning an empty list `[]` un-intentionally overrides `DEFAULT_PERMISSION_CLASSES` and exposes endpoints as fully unauthenticated.
+**Prevention:** Explicitly return `[IsAuthenticated()]` (or call `super().get_permissions()`) as a fallback rather than an empty list `[]` to prevent inadvertently removing global authentication checks.
