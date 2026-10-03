@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Card,
+  CircularProgress,
   CardActions,
   CardContent,
   Dialog,
@@ -258,6 +259,7 @@ export default function StickerTemplates() {
             variant="contained"
             onClick={handleSave}
             disabled={saving || !form.name.trim()}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.save')}
           </Button>
@@ -279,6 +281,7 @@ export default function StickerTemplates() {
             color="error"
             onClick={handleDelete}
             disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : undefined}
           >
             {t('common.delete')}
           </Button>
