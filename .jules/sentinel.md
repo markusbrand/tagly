@@ -18,3 +18,8 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+
+## 2025-02-21 - Unauthenticated Access to Sticker Templates
+**Vulnerability:** Information Disclosure / Broken Access Control on Sticker Templates
+**Learning:** Returning `[]` in `get_permissions()` for DRF class-based views effectively creates a public endpoint for any HTTP methods not explicitly restricted. In `StickerTemplateListCreateView` and `StickerTemplateDetailView`, `GET` requests were allowed without authentication because the default fallback returned an empty list of permissions.
+**Prevention:** Always verify if a fallback of `[IsAuthenticated()]` is needed when overriding `get_permissions()` in DRF. Unless an endpoint is explicitly meant to be public, ensure authentication is enforced by default.

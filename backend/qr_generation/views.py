@@ -33,7 +33,7 @@ class StickerTemplateListCreateView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == "POST":
             return [IsAdmin()]
-        return []
+        return [IsAuthenticated()]
 
     def perform_create(self, serializer):
         if serializer.validated_data.get("is_default"):
@@ -49,7 +49,7 @@ class StickerTemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_permissions(self):
         if self.request.method in ("PUT", "PATCH", "DELETE"):
             return [IsAdmin()]
-        return []
+        return [IsAuthenticated()]
 
     def perform_update(self, serializer):
         if serializer.validated_data.get("is_default"):

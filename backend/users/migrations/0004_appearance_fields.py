@@ -4,25 +4,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0003_alter_user_managers'),
+        ("users", "0003_alter_user_managers"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='appearance_bg_color',
-            field=models.CharField(blank=True, default='', help_text='Hex color for content background, e.g. #f5f5f5', max_length=9),
+            model_name="user",
+            name="appearance_bg_color",
+            field=models.CharField(
+                blank=True,
+                default="",
+                help_text="Hex color for content background, e.g. #f5f5f5",
+                max_length=9,
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='appearance_bg_image',
-            field=models.ImageField(blank=True, default='', help_text='Custom background image for the content area.', upload_to='user_backgrounds/'),
+            model_name="user",
+            name="appearance_bg_image",
+            field=models.ImageField(
+                blank=True,
+                default="",
+                help_text="Custom background image for the content area.",
+                upload_to="user_backgrounds/",
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='appearance_font_color',
-            field=models.CharField(blank=True, default='', help_text='Hex color for content text, e.g. #1a1a1a', max_length=9),
+            model_name="user",
+            name="appearance_font_color",
+            field=models.CharField(
+                blank=True,
+                default="",
+                help_text="Hex color for content text, e.g. #1a1a1a",
+                max_length=9,
+            ),
         ),
     ]
