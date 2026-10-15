@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,22 +14,49 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AuditLog',
+            name="AuditLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('CREATE', 'Create'), ('UPDATE', 'Update'), ('DELETE', 'Delete')], max_length=10)),
-                ('entity_type', models.CharField(max_length=100)),
-                ('entity_id', models.PositiveIntegerField()),
-                ('old_value', models.JSONField(blank=True, null=True)),
-                ('new_value', models.JSONField(blank=True, null=True)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('ip_address', models.GenericIPAddressField(blank=True, null=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='audit_logs', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("CREATE", "Create"),
+                            ("UPDATE", "Update"),
+                            ("DELETE", "Delete"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                ("entity_type", models.CharField(max_length=100)),
+                ("entity_id", models.PositiveIntegerField()),
+                ("old_value", models.JSONField(blank=True, null=True)),
+                ("new_value", models.JSONField(blank=True, null=True)),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("ip_address", models.GenericIPAddressField(blank=True, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="audit_logs",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'audit log',
-                'verbose_name_plural': 'audit logs',
-                'ordering': ['-timestamp'],
+                "verbose_name": "audit log",
+                "verbose_name_plural": "audit logs",
+                "ordering": ["-timestamp"],
             },
         ),
     ]
