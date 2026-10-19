@@ -26,3 +26,7 @@
 ## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
 **Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
+
+## 2026-08-29 - Missing Loading Spinners on Admin Dialog Save Buttons
+**Learning:** Found that the 'Save' buttons in the 'Create User' and 'Edit User Role' dialogs within `UserManagement.tsx` were disabling correctly during async operations, but they lacked visual feedback (loading spinners) indicating that an operation was in progress.
+**Action:** Always include a visual loading indicator on async submit buttons. When using MUI `Button` components, this can be achieved cleanly by passing `<CircularProgress size={20} color="inherit" />` to the `startIcon` prop conditionally based on the async state (e.g., `creating` or `saving`).
