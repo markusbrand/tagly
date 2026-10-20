@@ -26,3 +26,7 @@
 ## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
 **Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
+
+## 2026-10-20 - Adding Visual Loading Feedback to Dialog Action Buttons
+**Learning:** Found multiple places in the admin dashboard (User Management, Custom Fields, Sticker Templates) where the "Save" and "Delete" dialog buttons disabled themselves during network requests but provided no clear visual loading feedback. This leaves users wondering if their click registered or if the application has frozen.
+**Action:** When a button disables itself during an async operation, provide visual feedback by passing a `<CircularProgress size={20} color="inherit" />` to its `startIcon` property, conditionally rendered based on the same state variable (e.g., `saving`, `deleting`) that controls the `disabled` property.
