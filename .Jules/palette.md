@@ -26,3 +26,6 @@
 ## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
 **Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
+## 2024-10-21 - Add Loading Indicators to Async Save Buttons
+**Learning:** Dialog "Save" actions can leave the user uncertain if the button is clicked, especially if the API call is slow. The `startIcon` property of the MUI `Button` component is an elegant way to insert a `CircularProgress` component alongside the text during loading states. Setting `color="inherit"` on the progress indicator ensures it adapts cleanly to the button's `disabled` styling.
+**Action:** Always add loading spinners (`CircularProgress` in `startIcon`) to buttons triggering asynchronous API actions in forms to provide immediate visual feedback.
