@@ -26,3 +26,7 @@
 ## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
 **Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
+
+## 2026-08-30 - Prevent Text Jumping on Loading Buttons
+**Learning:** In Material UI (MUI), replacing a button's text with a `CircularProgress` component during a loading state causes the button's width to jump, leading to a jarring user experience.
+**Action:** When creating asynchronous action buttons (e.g., Save, Delete, Create), indicate the loading state visually by passing `<CircularProgress size={20} color="inherit" />` to the button's `startIcon` property while disabling the button and keeping the button's original text intact. This ensures the button maintains its width and provides clear context during the loading state.
