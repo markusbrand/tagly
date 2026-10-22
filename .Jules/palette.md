@@ -26,3 +26,6 @@
 ## 2026-08-27 - Missing ARIA Labels on Icon-only FAB Buttons (UserManagement)
 **Learning:** Found an icon-only `Fab` button (AddIcon) in `UserManagement.tsx` that lacked a tooltip, making its purpose unclear, especially for non-screen reader users who rely on visual hints for iconography. This was inconsistent with similar buttons across the app (like `StickerTemplates`).
 **Action:** Always wrap `<Fab>` components containing only an icon in a `<Tooltip>`, utilizing the existing i18n translation functions (e.g., `t('admin.add_user')`) to provide context on hover and implicitly add ARIA labels.
+## 2025-02-18 - Loading spinners for MUI async buttons
+**Learning:** MUI buttons handle `startIcon` very well. Adding `<CircularProgress size={20} color="inherit" />` inside `startIcon` when the button is in a disabled state (during async save/delete/create operations) provides excellent micro-UX without layout shifts.
+**Action:** When working with async actions (creating, saving, deleting) connected to MUI buttons (`Button`), use the existing state variables (`isSubmitting`, `saving`, `deleting`) to conditionally render a `CircularProgress` inside `startIcon`. Ensure to also disable the button during this state to prevent duplicate submissions.
