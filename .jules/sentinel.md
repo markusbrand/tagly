@@ -18,3 +18,7 @@
 **Learning:** xlsxwriter parses strings starting with '=' as formulas by default.
 **Prevention:** Set 'strings_to_formulas': False in xlsxwriter.Workbook options.
 
+## 2026-10-12 - Fix missing authentication on sticker templates API endpoints
+**Vulnerability:** The GET methods for the `StickerTemplateListCreateView` and `StickerTemplateDetailView` endpoints were inadvertently left public because their `get_permissions` method returned an empty list `[]` instead of `[IsAuthenticated()]`.
+**Learning:** In Django REST Framework, overriding `get_permissions()` to return `[]` completely bypasses the `DEFAULT_PERMISSION_CLASSES` set in `settings.py`. This is a standard pattern for making an endpoint public, but it can be dangerous if applied to sensitive data without care. When a view overrides `get_permissions` to apply `IsAdmin` for specific methods (like POST/PUT/DELETE), the fallback for other methods (like GET) should be the default `IsAuthenticated()` unless the endpoint is definitively intended to be public.
+**Prevention:** Always verify if public read access is intended when reviewing views that return `[]` from `get_permissions()`. When creating custom permissions, default to restrictive fallback (e.g., `return [IsAuthenticated()]`) instead of `return []`.
