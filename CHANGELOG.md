@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/markusbrand/tagly/compare/tagly-v1.3.0...tagly-v1.4.0) (2026-10-22)
+
+
+### Features
+
+* Add loading spinners to async buttons in admin pages ([50359e6](https://github.com/markusbrand/tagly/commit/50359e6b7718d55dae7f1e08d2eaafbbc2b64ba7))
+
 ## [1.3.0](https://github.com/markusbrand/tagly/compare/tagly-v1.2.0...tagly-v1.3.0) (2026-09-02)
 
 
