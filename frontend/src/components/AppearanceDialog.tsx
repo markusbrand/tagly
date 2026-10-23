@@ -49,7 +49,6 @@ export default function AppearanceDialog({ open, onClose }: Props) {
 
   useEffect(() => {
     if (open && user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFontColor(user.appearance_font_color || '');
       setBgColor(user.appearance_bg_color || '');
       setPreviewUrl(user.appearance_bg_image || '');

@@ -56,9 +56,7 @@ export default function Scanner() {
 
   const cameraIndexRef = useRef(cameraIndex);
   const cameraPreviewActiveRef = useRef(cameraPreviewActive);
-  // eslint-disable-next-line react-hooks/refs
   cameraIndexRef.current = cameraIndex;
-  // eslint-disable-next-line react-hooks/refs
   cameraPreviewActiveRef.current = cameraPreviewActive;
 
   useEffect(() => {
