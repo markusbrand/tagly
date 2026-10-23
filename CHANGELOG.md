@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/markusbrand/tagly/compare/tagly-v1.4.0...tagly-v1.4.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* resolve lint warnings, migration validator drift, and untrack celerybeat-schedule ([4396d68](https://github.com/markusbrand/tagly/commit/4396d6852bc05a0e4f9819b6146406ed39b2ee6a))
+
 ## [1.4.0](https://github.com/markusbrand/tagly/compare/tagly-v1.3.0...tagly-v1.4.0) (2026-10-22)
 
 
